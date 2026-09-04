@@ -1,5 +1,7 @@
 {
-  "eurlexRssUrl": "A_REMPLACER — URL du flux RSS obtenu via 'My RSS alerts' sur eur-lex.europa.eu, après avoir créé et sauvegardé une recherche avec les mots-clés du profil (voir README, étape 4).",
+  "eurlexRssUrl": [
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3nVUPs5IuOuTyC3LG%2BwReqpfCzc%3D"
+  ],
   "pisteApiBaseUrl": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
   "pisteTokenUrl": "https://oauth.piste.gouv.fr/api/oauth/token",
   "legifranceRechercheParThemes": true,
