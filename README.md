@@ -28,7 +28,7 @@ veille-reglementaire.html (GitHub Pages) — dashboard consultable
 Ces étapes ne peuvent pas être automatisées — elles demandent tes identifiants / comptes.
 
 1. **Créer le repo GitHub** : nouveau repo `veille-reglementaire`, pousser le contenu de ce dossier.
-2. **Activer GitHub Pages** sur ce repo, dossier `/public`.
+2. **Activer GitHub Pages** sur ce repo : Settings → Pages → Source = "GitHub Actions" (pas "Deploy from a branch", qui ne permet pas de choisir le dossier `/public`). Le workflow `.github/workflows/deploy-pages.yml` publie automatiquement le contenu de `public/` à chaque push sur `main`.
 3. **Compte PISTE (API Légifrance officielle)** : créer un compte gratuit sur [piste.gouv.fr](https://piste.gouv.fr/en/), créer une application, souscrire à l'API "Légifrance / DILA", récupérer `PISTE_CLIENT_ID` et `PISTE_CLIENT_SECRET`.
 4. **Alerte EUR-Lex** : sur [eur-lex.europa.eu](https://eur-lex.europa.eu), créer un compte gratuit, faire une recherche avancée avec les mots-clés du profil MPE (voir `collector/config/profil.json`), l'enregistrer dans "My searches", puis récupérer son flux RSS via "My RSS alerts" (`eur-lex.europa.eu/content/help/my-eurlex/my-rss-feeds.html`). Coller l'URL du flux dans `collector/config/sources.json` → `eurlexRssUrl`.
 5. **Clé API Gemini gratuite** : créer une clé sur [Google AI Studio](https://aistudio.google.com/app/apikey) → `GEMINI_API_KEY`.

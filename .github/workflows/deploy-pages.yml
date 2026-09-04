@@ -1,0 +1,43 @@
+name: Déployer le dashboard (GitHub Pages)
+
+# Publie le contenu de public/ sur GitHub Pages à chaque push sur main.
+# Nécessite d'activer Pages une seule fois : Settings → Pages → Source = "GitHub Actions".
+# (La méthode "Deploy from a branch" ne permet de choisir que "/ (root)" ou "/docs",
+# pas un dossier arbitraire comme /public — d'où ce workflow dédié.)
+
+on:
+  push:
+    branches: ["main"]
+    paths: ["public/**"]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurer Pages
+        uses: actions/configure-pages@v5
+
+      - name: Uploader l'artefact (dossier public/)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
