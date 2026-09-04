@@ -19,12 +19,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: collector/package-lock.json
+          # Pas de cache npm : il n'y a pas de package-lock.json committé (généré à la volée
+          # ci-dessous), et actions/setup-node échoue si le fichier de cache-dependency-path
+          # qu'on lui indique n'existe pas dans le repo.
 
       - name: Install dependencies
         working-directory: collector
-        run: npm ci || npm install
+        run: npm install
 
       - name: Run collector
         working-directory: collector
