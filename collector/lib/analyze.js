@@ -46,7 +46,7 @@ const SCHEMA_ANALYSE = {
 export async function analyserTexte({ apiKey, texte, profil }) {
   const prompt = construirePrompt(texte, profil);
 
-  const res = await fetch("https://generativelanguage.googleapis.com/v1beta2/interactions", {
+  const res = await fetch("https://generativelanguage.googleapis.com/v1beta/interactions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
