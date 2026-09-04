@@ -1,0 +1,83 @@
+{
+  "raisonSociale": "MPE Europe SAS",
+  "siege": "Monistrol-sur-Loire, Haute-Loire (43), France",
+  "groupe": "Filiale européenne de Modern Process Equipment (MPE, Chicago), ex-COJIT",
+  "effectif": "~6 personnes",
+  "paysActivite": ["France", "Union européenne"],
+  "fabricantOuIntegrateur": "A_VALIDER",
+  "activites": [
+    "Broyage / réduction granulométrique de matières sèches",
+    "Transport de matières en vrac (convoyeurs à vis, convoyeurs tubulaires à chaîne, trémies)",
+    "Tuyauterie et cuves inox",
+    "Ingénierie, dimensionnement, devis, SAV / pièces de rechange"
+  ],
+  "secteursClients": ["Café", "Dry foods", "Pet food", "Chimie", "Minéraux", "Agroalimentaire"],
+  "equipementsEtMateriaux": [
+    "Broyeurs",
+    "Vis sans fin / convoyeurs",
+    "Trémies / hoppers",
+    "Tuyauterie et cuves inox alimentaire",
+    "Transport pneumatique de poudres (à confirmer)"
+  ],
+  "certifications": {
+    "marquageCE": "A_VALIDER",
+    "iso9001": "A_VALIDER",
+    "referentielsClients": "A_VALIDER (IFS/BRC, EHEDG documenté ?)"
+  },
+  "themesReglementaires": [
+    {
+      "id": "machines",
+      "nom": "Sécurité des machines",
+      "textesCles": ["Directive 2006/42/CE", "Règlement (UE) 2023/1230"],
+      "motsClesRecherche": ["directive machines", "règlement machines", "marquage CE machine", "analyse de risques machine"]
+    },
+    {
+      "id": "atex",
+      "nom": "ATEX — atmosphères explosives",
+      "textesCles": ["Directive 2014/34/UE", "Directive 1999/92/CE"],
+      "motsClesRecherche": ["ATEX", "poussières combustibles", "atmosphère explosive", "zonage ATEX"]
+    },
+    {
+      "id": "contact-alimentaire",
+      "nom": "Matériaux au contact alimentaire",
+      "textesCles": ["Règlement (CE) 1935/2004"],
+      "motsClesRecherche": ["contact alimentaire", "matériaux alimentaires", "inox alimentaire"]
+    },
+    {
+      "id": "ehedg",
+      "nom": "Conception hygiénique (EHEDG)",
+      "textesCles": ["Lignes directrices EHEDG"],
+      "motsClesRecherche": ["conception hygiénique", "EHEDG", "hygienic design"]
+    },
+    {
+      "id": "ped",
+      "nom": "Équipements sous pression",
+      "textesCles": ["Directive 2014/68/UE (PED)"],
+      "motsClesRecherche": ["équipement sous pression", "PED"]
+    },
+    {
+      "id": "reach-clp",
+      "nom": "REACH / CLP — substances chimiques",
+      "textesCles": ["Règlement (CE) 1907/2006 (REACH)", "Règlement (CE) 1272/2008 (CLP)"],
+      "motsClesRecherche": ["REACH", "CLP", "substance restreinte", "SVHC"]
+    },
+    {
+      "id": "environnement",
+      "nom": "Environnement / ICPE / émissions",
+      "textesCles": ["Nomenclature ICPE"],
+      "motsClesRecherche": ["ICPE", "émissions poussières", "installation classée"]
+    },
+    {
+      "id": "export",
+      "nom": "Douanes / export hors UE",
+      "textesCles": [],
+      "motsClesRecherche": ["export équipement industriel", "douane machine"]
+    }
+  ],
+  "aValider": [
+    "Fabricant ou intégrateur (responsabilité marquage CE) ?",
+    "Présence réelle de transport pneumatique de poudres (risque ATEX) ?",
+    "Certifications déjà suivies en interne (ISO 9001, IFS/BRC clients) ?",
+    "Installations réalisées uniquement en France ou aussi ailleurs en UE ?"
+  ]
+}

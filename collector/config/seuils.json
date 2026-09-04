@@ -1,0 +1,8 @@
+{
+  "nonPertinentMax": 30,
+  "aSurveillerMax": 60,
+  "importantMax": 80,
+  "critiqueMin": 81,
+  "alerteImmediateActive": false,
+  "_commentaire": "Pendant le rodage (2-3 premières semaines), laisser alerteImmediateActive à false : tout reste visible dans le dashboard mais aucun email n'est envoyé, le temps de calibrer les seuils sur des textes réels."
+}

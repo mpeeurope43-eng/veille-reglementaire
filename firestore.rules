@@ -1,0 +1,35 @@
+rules_version = '2';
+
+// ⚠️ FICHIER OBSOLÈTE / NON DÉPLOYÉ SEUL — conservé ici pour référence uniquement.
+//
+// Veille Réglementaire utilise le même projet Firestore que le reste de la Suite MPE
+// ("mpe-suite"), qui n'a qu'un seul jeu de règles pour tout le projet. Ces règles vivent donc
+// désormais directement dans firestore_mpe_suite.rules (à la racine du dossier CLAUDE), avec
+// les mêmes fonctions estConnecte()/monRole()/estAdmin() que SAV, Suivi de projet et Pointage.
+// C'est ce fichier-là qui est déployé (firebase deploy --only firestore:rules), pas celui-ci.
+//
+// Version alignée avec firestore_mpe_suite.rules (accès réservé aux admins, phase 1) :
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function estConnecte() { return request.auth != null; }
+    function monRole() { return request.auth.token.role; }
+    function estAdmin() { return estConnecte() && monRole() == 'admin'; }
+
+    match /veille/textes/items/{docId} {
+      allow read: if estAdmin();
+      allow write: if false; // uniquement via le compte de service (Admin SDK, bypass ces règles)
+    }
+
+    match /veille/referentiels/items/{docId} {
+      allow read: if estAdmin();
+      allow write: if estAdmin();
+    }
+
+    match /veille/config/params/{docId} {
+      allow read: if estAdmin();
+      allow write: if estAdmin();
+    }
+  }
+}

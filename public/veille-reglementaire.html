@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Veille Réglementaire — MPE Europe</title>
+<script src="firebase-config.js"></script>
+<style>
+  :root {
+    --navy: #1B3A6B;
+    --red: #C8102E;
+    --gold: #F0A500;
+    --bg: #F4F6F9;
+    --card: #FFFFFF;
+    --text: #1F2937;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  header h1 { margin: 0; font-size: 1.3rem; font-weight: 600; }
+  header .sub { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+  nav {
+    display: flex;
+    gap: 4px;
+    background: white;
+    padding: 0 32px;
+    border-bottom: 1px solid var(--border);
+  }
+  nav button {
+    background: none;
+    border: none;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 3px solid transparent;
+  }
+  nav button.active { color: var(--navy); border-bottom-color: var(--gold); font-weight: 600; }
+  main { padding: 28px 32px; max-width: 1100px; margin: 0 auto; }
+  .stats { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    min-width: 140px;
+    flex: 1;
+  }
+  .stat .n { font-size: 1.8rem; font-weight: 700; color: var(--navy); }
+  .stat .l { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filters select, .filters input {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.85rem;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 18px 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    border-left: 4px solid var(--border);
+  }
+  .card.impact-critique { border-left-color: var(--red); }
+  .card.impact-important { border-left-color: var(--gold); }
+  .card.impact-a-surveiller { border-left-color: var(--navy); }
+  .card.impact-informatif { border-left-color: #9CA3AF; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 1.02rem; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem;
+    font-weight: 600; color: white; white-space: nowrap;
+  }
+  .badge.critique { background: var(--red); }
+  .badge.important { background: var(--gold); color: #3a2a00; }
+  .badge.a-surveiller { background: var(--navy); }
+  .badge.informatif { background: #9CA3AF; }
+  .meta { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+  .resume { font-size: 0.9rem; margin-bottom: 8px; }
+  .actions { font-size: 0.85rem; }
+  .actions ul { margin: 4px 0 0 18px; padding: 0; }
+  .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.82rem; }
+  .card-footer a { color: var(--navy); }
+  .tag-fait { background: #EEF2FF; color: var(--navy); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; }
+  .empty { color: var(--muted); text-align: center; padding: 40px; }
+
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+  .ref-card { background: var(--card); border-radius: 10px; padding: 18px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .ref-card h3 { margin: 0 0 4px; font-size: 1rem; color: var(--navy); }
+  .ref-card .domaine { font-size: 0.75rem; color: var(--muted); margin-bottom: 8px; }
+  .ref-card textarea { width: 100%; min-height: 60px; font-family: inherit; font-size: 0.85rem; padding: 6px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; }
+  .ref-card .liens-list { font-size: 0.8rem; margin: 6px 0; }
+  .ref-card .liens-list a { display: block; color: var(--navy); word-break: break-all; }
+  .ref-card .liens-list li { margin-bottom: 3px; list-style: none; margin-left: 0; padding-left: 0; }
+  .ref-card ul { padding-left: 0; }
+  .add-doc { display: flex; gap: 6px; margin-top: 8px; }
+  .add-doc input { flex: 1; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; }
+  .btn { background: var(--navy); color: white; border: none; padding: 7px 12px; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+  .btn:hover { opacity: 0.9; }
+  .btn-secondary { background: white; color: var(--navy); border: 1px solid var(--navy); }
+  .save-status { font-size: 0.72rem; color: var(--muted); margin-left: 8px; }
+
+  .rapport-controls { display: flex; gap: 10px; align-items: center; margin-bottom: 18px; }
+  .rapport-box { background: var(--card); border-radius: 10px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .rapport-box h4 { color: var(--navy); margin-top: 18px; }
+  .rapport-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+  .rapport-item:last-child { border-bottom: none; }
+
+  /* ── Écrans d'authentification (login / 2FA / verrouillage / accès refusé) ──
+     Même mécanisme que le reste de la Suite MPE (Firebase Authentication +
+     2FA TOTP obligatoire + rôle admin via custom claim) : mpe-suite est le
+     même projet Firebase que pointages_test.html / SAV_Prototype.html, donc
+     les comptes et la 2FA déjà enrôlée fonctionnent tels quels ici. */
+  .auth-wrap { display: none; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); }
+  .auth-box { width: 340px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 26px 24px; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+  .auth-box h1 { margin: 0 0 2px; font-size: 1.2rem; color: var(--navy); }
+  .auth-box .sub { font-size: 0.85rem; color: var(--muted); margin-bottom: 18px; }
+  .auth-field { margin-bottom: 14px; }
+  .auth-field label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 4px; }
+  .auth-field input { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; font-family: inherit; }
+  .auth-err { color: var(--red); font-size: 0.78rem; margin-bottom: 10px; min-height: 16px; }
+  .auth-note { font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
+  .auth-note a { color: var(--navy); }
+  .auth-btn { width: 100%; text-align: center; padding: 10px; }
+</style>
+</head>
+<body>
+
+<!-- Connexion -->
+<div id="authScreen" class="auth-wrap">
+  <div class="auth-box">
+    <h1>Veille Réglementaire</h1>
+    <div class="sub">Connexion requise — MPE Europe (accès réservé aux administrateurs)</div>
+    <div class="auth-field"><label>E-mail</label><input id="authEmail" type="email" autocomplete="username" onkeydown="if(event.key==='Enter') document.getElementById('authPassword').focus();"></div>
+    <div class="auth-field"><label>Mot de passe</label><input id="authPassword" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') window.__submitLogin();"></div>
+    <div id="authError" class="auth-err"></div>
+    <button type="button" class="btn auth-btn" id="authSubmitBtn" onclick="window.__submitLogin()">Se connecter</button>
+    <div class="auth-note">Utilise ton compte habituel de la Suite MPE (Pointage / Suivi de projet). Pas de compte séparé pour cet outil.</div>
+  </div>
+</div>
+
+<!-- Double authentification (2FA TOTP) -->
+<div id="mfaChallengePanel" class="auth-wrap">
+  <div class="auth-box">
+    <h1>Double authentification</h1>
+    <div class="sub">Saisis le code affiché sur ton appli d'authentification.</div>
+    <div class="auth-field"><label>Code à 6 chiffres</label><input id="mfaChallengeCode" type="text" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="123456" onkeydown="if(event.key==='Enter') window.__submitMfaChallenge();"></div>
+    <div id="mfaChallengeError" class="auth-err"></div>
+    <button type="button" class="btn auth-btn" id="mfaChallengeSubmitBtn" onclick="window.__submitMfaChallenge()">Valider</button>
+    <div class="auth-note"><a href="#" onclick="window.__cancelMfaChallenge();return false;">Annuler et revenir à la connexion</a></div>
+  </div>
+</div>
+
+<!-- Écran de verrouillage par inactivité (même logique que les autres outils) -->
+<div id="lockScreen" class="auth-wrap">
+  <div class="auth-box" style="text-align:center;">
+    <div style="font-size:36px;margin-bottom:6px;">🔒</div>
+    <h1>Session verrouillée</h1>
+    <div class="sub">Inactivité prolongée — ressaisis ton mot de passe pour continuer.</div>
+    <div id="lockEmail" class="auth-note" style="margin-bottom:12px;"></div>
+    <div class="auth-field" style="text-align:left;"><label>Mot de passe</label><input id="lockPassword" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') window.__submitUnlock();"></div>
+    <div id="lockError" class="auth-err"></div>
+    <button type="button" class="btn auth-btn" onclick="window.__submitUnlock()">Déverrouiller</button>
+    <div class="auth-note"><a href="#" onclick="window.__logout();return false;">Se déconnecter (autre compte)</a></div>
+  </div>
+</div>
+
+<!-- Accès refusé (tout profil non-admin) -->
+<div id="accessDeniedScreen" class="auth-wrap">
+  <div class="auth-box" style="text-align:center;">
+    <h1>Accès non autorisé</h1>
+    <div class="sub">Veille Réglementaire est réservé aux comptes administrateur.</div>
+    <a href="index.html" class="btn auth-btn" style="display:inline-block;text-decoration:none;">Retour à l'accueil</a>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+<header>
+  <div>
+    <h1>Veille Réglementaire</h1>
+    <div class="sub">MPE Europe — surveillance automatique Légifrance / EUR-Lex</div>
+  </div>
+  <div class="sub" id="derniere-maj">Dernière mise à jour : —</div>
+</header>
+
+<nav>
+  <button class="tab-btn active" data-tab="dashboard">Tableau de bord</button>
+  <button class="tab-btn" data-tab="connaissances">Base de connaissances</button>
+  <button class="tab-btn" data-tab="rapport">Rapport périodique</button>
+</nav>
+
+<main>
+
+  <!-- TABLEAU DE BORD -->
+  <section id="tab-dashboard">
+    <div class="stats">
+      <div class="stat"><div class="n" id="stat-critique">–</div><div class="l">Critiques</div></div>
+      <div class="stat"><div class="n" id="stat-important">–</div><div class="l">Importants</div></div>
+      <div class="stat"><div class="n" id="stat-surveiller">–</div><div class="l">À surveiller</div></div>
+      <div class="stat"><div class="n" id="stat-total">–</div><div class="l">Textes analysés (total)</div></div>
+    </div>
+
+    <div class="filters">
+      <select id="filtre-impact">
+        <option value="">Tous les impacts</option>
+        <option value="Critique">Critique</option>
+        <option value="Important">Important</option>
+        <option value="À surveiller">À surveiller</option>
+        <option value="Informatif">Informatif</option>
+      </select>
+      <select id="filtre-pertinence">
+        <option value="">Toute pertinence</option>
+        <option value="Oui">Oui</option>
+        <option value="Probablement">Probablement</option>
+        <option value="À vérifier">À vérifier</option>
+        <option value="Non pertinent">Non pertinent</option>
+      </select>
+      <input type="text" id="filtre-recherche" placeholder="Rechercher un mot-clé…" />
+    </div>
+
+    <div id="liste-textes"></div>
+  </section>
+
+  <!-- BASE DE CONNAISSANCES -->
+  <section id="tab-connaissances" style="display:none;">
+    <p style="color:var(--muted); font-size:0.85rem; margin-top:0;">
+      Fiches de référence par thème réglementaire. Ajoute ici tes propres liens vers des documents internes MPE (procédures, notices, certificats).
+    </p>
+    <div class="ref-grid" id="liste-referentiels"></div>
+  </section>
+
+  <!-- RAPPORT PÉRIODIQUE -->
+  <section id="tab-rapport" style="display:none;">
+    <div class="rapport-controls">
+      <select id="rapport-periode">
+        <option value="7">7 derniers jours</option>
+        <option value="30" selected>30 derniers jours (mensuel)</option>
+        <option value="90">90 derniers jours</option>
+      </select>
+      <button class="btn btn-secondary" id="btn-copier-rapport">Copier le rapport</button>
+    </div>
+    <div class="rapport-box" id="rapport-contenu">
+      <div class="empty">Chargement…</div>
+    </div>
+  </section>
+
+</main>
+</div><!-- /#app -->
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy, arrayUnion, getDoc
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, getIdTokenResult,
+    TotpMultiFactorGenerator, getMultiFactorResolver
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+
+  const app = initializeApp(window.MPE_FIREBASE_CONFIG);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // ════════════════════════════════════════════════════════════════
+  // AUTHENTIFICATION — même mécanisme que le reste de la Suite MPE :
+  // compte Firebase individuel + 2FA TOTP obligatoire + rôle admin lu
+  // depuis les custom claims du token (comme index.html / SAV_Prototype.html),
+  // pas de compte ni de mot de passe séparé pour cet outil. Accès réservé
+  // aux admins pour cette phase 1 (cf. 00-synthese-pour-suite-MPE.md §8).
+  // ════════════════════════════════════════════════════════════════
+  function showScreen(id){
+    ['authScreen','mfaChallengePanel','lockScreen','accessDeniedScreen'].forEach(function(s){
+      document.getElementById(s).style.display = (s===id) ? 'flex' : 'none';
+    });
+    document.getElementById('app').style.display = (id===null) ? 'block' : 'none';
+  }
+  function translateAuthError(err){
+    var code = err && err.code;
+    if(code==='auth/invalid-email') return 'Adresse e-mail invalide.';
+    if(code==='auth/missing-password') return 'Mot de passe requis.';
+    if(code==='auth/invalid-credential' || code==='auth/wrong-password' || code==='auth/user-not-found') return 'E-mail ou mot de passe incorrect.';
+    if(code==='auth/too-many-requests') return 'Trop de tentatives. Réessaie dans quelques minutes.';
+    if(code==='auth/network-request-failed') return 'Problème réseau — vérifie ta connexion.';
+    return 'Erreur de connexion' + (code ? (' (' + code + ')') : '') + '.';
+  }
+  function _hashMdp(pwd){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){ return b.toString(16).padStart(2,'0'); }).join('');
+    });
+  }
+  function _memoriserMdpDeverrouillage(pwd){
+    return _hashMdp(pwd).then(function(h){ sessionStorage.setItem('mpeMdpHash', h); }).catch(function(){});
+  }
+
+  var _mfaResolver = null;
+
+  window.__submitLogin = function(){
+    var email = document.getElementById('authEmail').value.trim();
+    var password = document.getElementById('authPassword').value;
+    var errEl = document.getElementById('authError');
+    var btn = document.getElementById('authSubmitBtn');
+    errEl.textContent = '';
+    if(!email || !password){ errEl.textContent = 'Renseigne l\'e-mail et le mot de passe.'; return; }
+    sessionStorage.removeItem('mpeVerrouille');
+    btn.disabled = true; var label = btn.textContent; btn.textContent = 'Connexion…';
+    signInWithEmailAndPassword(auth, email, password).then(function(){
+      return _memoriserMdpDeverrouillage(password);
+    }).catch(function(err){
+      if(err && err.code === 'auth/multi-factor-auth-required'){
+        _memoriserMdpDeverrouillage(password);
+        _mfaResolver = getMultiFactorResolver(auth, err);
+        showScreen('mfaChallengePanel');
+        document.getElementById('mfaChallengeCode').value = '';
+        document.getElementById('mfaChallengeError').textContent = '';
+        return;
+      }
+      errEl.textContent = translateAuthError(err);
+    }).finally(function(){ btn.disabled = false; btn.textContent = label; });
+  };
+
+  window.__submitMfaChallenge = function(){
+    var code = document.getElementById('mfaChallengeCode').value.trim();
+    var errEl = document.getElementById('mfaChallengeError');
+    var btn = document.getElementById('mfaChallengeSubmitBtn');
+    errEl.textContent = '';
+    if(!_mfaResolver){ errEl.textContent = 'Session expirée, reconnecte-toi.'; return; }
+    if(!/^\d{6}$/.test(code)){ errEl.textContent = 'Saisis les 6 chiffres du code.'; return; }
+    btn.disabled = true; var label = btn.textContent; btn.textContent = 'Vérification…';
+    var hint = _mfaResolver.hints[0];
+    var assertion = TotpMultiFactorGenerator.assertionForSignIn(hint.uid, code);
+    _mfaResolver.resolveSignIn(assertion).then(function(){
+      _mfaResolver = null;
+      // onAuthStateChanged prend le relais.
+    }).catch(function(err){
+      errEl.textContent = (err.code === 'auth/invalid-verification-code') ? 'Code invalide, réessaie.' : ('Erreur : ' + err.message);
+    }).finally(function(){ btn.disabled = false; btn.textContent = label; });
+  };
+
+  window.__cancelMfaChallenge = function(){
+    _mfaResolver = null;
+    showScreen('authScreen');
+  };
+
+  window.__logout = function(){
+    sessionStorage.removeItem('mpeMdpHash');
+    sessionStorage.removeItem('mpeVerrouille');
+    signOut(auth).then(function(){ window.location.href = 'index.html'; });
+  };
+
+  function _verrouillerSession(){
+    if(!auth.currentUser) return;
+    sessionStorage.setItem('mpeVerrouille', '1');
+    document.getElementById('lockEmail').textContent = auth.currentUser.email;
+    document.getElementById('lockPassword').value = '';
+    document.getElementById('lockError').textContent = '';
+    showScreen('lockScreen');
+    setTimeout(function(){ document.getElementById('lockPassword').focus(); }, 50);
+  }
+  window.__submitUnlock = function(){
+    var pwd = document.getElementById('lockPassword').value;
+    var errEl = document.getElementById('lockError');
+    var hashConnu = sessionStorage.getItem('mpeMdpHash');
+    errEl.textContent = '';
+    if(!pwd){ errEl.textContent = 'Saisis le mot de passe.'; return; }
+    if(!hashConnu){ window.__logout(); return; }
+    _hashMdp(pwd).then(function(h){
+      if(h === hashConnu){
+        sessionStorage.removeItem('mpeVerrouille');
+        showScreen(null);
+        _reinitialiserTimerInactivite();
+      } else {
+        errEl.textContent = 'Mot de passe incorrect.';
+      }
+    });
+  };
+
+  // Verrouillage automatique par inactivité — même durée réglable que le reste
+  // de la Suite (document reglages/securite, champ timeoutInactiviteMinutes).
+  var DUREE_INACTIVITE_MS = 30 * 60 * 1000;
+  var _timerInactivite = null, _dernierResetInactivite = 0;
+  function _demarrerTimerInactivite(){
+    getDoc(doc(db, 'reglages', 'securite')).then(function(snap){
+      var min = snap.exists() && snap.data().timeoutInactiviteMinutes;
+      if(min && min > 0) DUREE_INACTIVITE_MS = min * 60 * 1000;
+    }).catch(function(){}).then(function(){
+      _reinitialiserTimerInactivite();
+      ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(function(evt){
+        document.addEventListener(evt, _reinitialiserTimerInactivite, { passive: true });
+      });
+    });
+  }
+  function _reinitialiserTimerInactivite(){
+    var maintenant = Date.now();
+    if(maintenant - _dernierResetInactivite < 5000) return;
+    _dernierResetInactivite = maintenant;
+    if(_timerInactivite) clearTimeout(_timerInactivite);
+    _timerInactivite = setTimeout(function(){
+      if(auth.currentUser) _verrouillerSession();
+    }, DUREE_INACTIVITE_MS);
+  }
+
+  onAuthStateChanged(auth, function(user){
+    if(user){
+      var eraitVerrouille = sessionStorage.getItem('mpeVerrouille') === '1';
+      if(eraitVerrouille && !sessionStorage.getItem('mpeMdpHash')){ signOut(auth); return; }
+      _demarrerTimerInactivite();
+      getIdTokenResult(user).then(function(res){
+        var role = res.claims && res.claims.role;
+        if(role !== 'admin'){ showScreen('accessDeniedScreen'); return; }
+        showScreen(null);
+        chargerTextes().then(function(){ genererRapport(Number(document.getElementById('rapport-periode').value)); });
+        chargerReferentiels();
+        if(eraitVerrouille) _verrouillerSession();
+      }).catch(function(err){
+        console.error('Erreur de lecture du rôle :', err);
+        showScreen('accessDeniedScreen');
+      });
+    } else {
+      showScreen('authScreen');
+    }
+  });
+
+  // ---------- Navigation ----------
+  document.querySelectorAll(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll("main > section").forEach((s) => (s.style.display = "none"));
+      document.getElementById("tab-" + btn.dataset.tab).style.display = "block";
+    });
+  });
+
+  // ---------- Tableau de bord ----------
+  let tousLesTextes = [];
+
+  function classeImpact(impact) {
+    return { "Critique": "impact-critique", "Important": "impact-important", "À surveiller": "impact-a-surveiller", "Informatif": "impact-informatif" }[impact] || "";
+  }
+  function badgeImpact(impact) {
+    return { "Critique": "critique", "Important": "important", "À surveiller": "a-surveiller", "Informatif": "informatif" }[impact] || "informatif";
+  }
+
+  function rendreTextes() {
+    const impactVoulu = document.getElementById("filtre-impact").value;
+    const pertinenceVoulue = document.getElementById("filtre-pertinence").value;
+    const recherche = document.getElementById("filtre-recherche").value.toLowerCase();
+
+    const filtres = tousLesTextes.filter((t) => {
+      if (impactVoulu && t.impact !== impactVoulu) return false;
+      if (pertinenceVoulue && t.sommesNousConcernes !== pertinenceVoulue) return false;
+      if (recherche && !(t.titre || "").toLowerCase().includes(recherche)) return false;
+      return true;
+    });
+
+    const container = document.getElementById("liste-textes");
+    if (filtres.length === 0) {
+      container.innerHTML = '<div class="empty">Aucun texte pour ces filtres.</div>';
+      return;
+    }
+
+    container.innerHTML = filtres.map((t) => `
+      <div class="card ${classeImpact(t.impact)}">
+        <div class="card-top">
+          <h3>${escapeHtml(t.titre || "(sans titre)")}</h3>
+          <span class="badge ${badgeImpact(t.impact)}">${t.impact || "?"}</span>
+        </div>
+        <div class="meta">
+          ${escapeHtml(t.source || "")} · ${escapeHtml(t.organisme || "")} · publié le ${formatDate(t.datePublication)}
+          · <span class="tag-fait">FAIT RÉGLEMENTAIRE</span>
+        </div>
+        <div class="resume"><strong>ANALYSE IA :</strong> ${escapeHtml(t.resume || "")}</div>
+        <div class="resume">Concerne MPE Europe : <strong>${escapeHtml(t.sommesNousConcernes || "?")}</strong> — ${escapeHtml(t.justificationPertinence || "")}</div>
+        ${t.echeanceMiseEnConformite ? `<div class="resume">Échéance : <strong>${escapeHtml(t.echeanceMiseEnConformite)}</strong></div>` : ""}
+        ${(t.actionsRecommandees && t.actionsRecommandees.length) ? `
+          <div class="actions"><strong>RECOMMANDATION — actions à mener :</strong>
+            <ul>${t.actionsRecommandees.map((a) => `<li>${escapeHtml(a)}</li>`).join("")}</ul>
+          </div>` : ""}
+        <div class="card-footer">
+          <span>Score : ${t.score ?? "?"}/100</span>
+          <a href="${t.url}" target="_blank" rel="noopener">Source officielle ↗</a>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  async function chargerTextes() {
+    const q = query(collection(db, "veille", "textes", "items"), orderBy("dateDetection", "desc"));
+    const snap = await getDocs(q);
+    tousLesTextes = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+
+    document.getElementById("stat-critique").textContent = tousLesTextes.filter((t) => t.impact === "Critique").length;
+    document.getElementById("stat-important").textContent = tousLesTextes.filter((t) => t.impact === "Important").length;
+    document.getElementById("stat-surveiller").textContent = tousLesTextes.filter((t) => t.impact === "À surveiller").length;
+    document.getElementById("stat-total").textContent = tousLesTextes.length;
+
+    if (tousLesTextes.length && tousLesTextes[0].dateDetection) {
+      const d = tousLesTextes[0].dateDetection.toDate ? tousLesTextes[0].dateDetection.toDate() : new Date(tousLesTextes[0].dateDetection);
+      document.getElementById("derniere-maj").textContent = "Dernière mise à jour : " + formatDate(d);
+    }
+
+    rendreTextes();
+  }
+
+  ["filtre-impact", "filtre-pertinence", "filtre-recherche"].forEach((id) =>
+    document.getElementById(id).addEventListener("input", rendreTextes)
+  );
+
+  // ---------- Base de connaissances ----------
+  async function chargerReferentiels() {
+    const snap = await getDocs(collection(db, "veille", "referentiels", "items"));
+    const referentiels = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const container = document.getElementById("liste-referentiels");
+
+    if (referentiels.length === 0) {
+      container.innerHTML = '<div class="empty">Base de connaissances vide — exécuter collector/scripts/seed-referentiels.js.</div>';
+      return;
+    }
+
+    container.innerHTML = referentiels.map((r) => `
+      <div class="ref-card" data-id="${r.id}">
+        <h3>${escapeHtml(r.nom)}</h3>
+        <div class="domaine">${escapeHtml(r.domaine || "")}</div>
+        <textarea class="ref-resume" data-id="${r.id}">${escapeHtml(r.resumeBesoin || "")}</textarea>
+        <ul class="liens-list">
+          ${(r.liensSourcesOfficielles || []).map((l) => `<li><a href="${l}" target="_blank" rel="noopener">📄 ${l}</a></li>`).join("")}
+        </ul>
+        <strong style="font-size:0.8rem;">Documents internes MPE :</strong>
+        <ul class="liens-list liens-internes" data-id="${r.id}">
+          ${(r.liensDocumentsInternes || []).map((l) => `<li><a href="${l}" target="_blank" rel="noopener">📎 ${l}</a></li>`).join("")}
+        </ul>
+        <div class="add-doc">
+          <input type="text" placeholder="URL d'un document interne…" class="input-nouveau-lien" data-id="${r.id}" />
+          <button class="btn ajouter-lien" data-id="${r.id}">Ajouter</button>
+        </div>
+        <div style="margin-top:8px;">
+          <button class="btn btn-secondary sauver-resume" data-id="${r.id}">Enregistrer le résumé</button>
+          <span class="save-status" data-id="${r.id}"></span>
+        </div>
+      </div>
+    `).join("");
+
+    container.querySelectorAll(".ajouter-lien").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const input = container.querySelector(`.input-nouveau-lien[data-id="${id}"]`);
+        const url = input.value.trim();
+        if (!url) return;
+        await updateDoc(doc(db, "veille", "referentiels", "items", id), {
+          liensDocumentsInternes: arrayUnion(url),
+          derniereMiseAJour: new Date().toISOString(),
+        });
+        input.value = "";
+        chargerReferentiels();
+      });
+    });
+
+    container.querySelectorAll(".sauver-resume").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const texte = container.querySelector(`.ref-resume[data-id="${id}"]`).value;
+        await updateDoc(doc(db, "veille", "referentiels", "items", id), {
+          resumeBesoin: texte,
+          derniereMiseAJour: new Date().toISOString(),
+        });
+        const status = container.querySelector(`.save-status[data-id="${id}"]`);
+        status.textContent = "Enregistré ✓";
+        setTimeout(() => (status.textContent = ""), 2000);
+      });
+    });
+  }
+
+  // ---------- Rapport périodique ----------
+  function genererRapport(jours) {
+    const seuil = Date.now() - jours * 24 * 3600 * 1000;
+    const periode = tousLesTextes.filter((t) => {
+      const d = t.dateDetection?.toDate ? t.dateDetection.toDate() : new Date(t.dateDetection);
+      return d && d.getTime() >= seuil;
+    });
+
+    const parImpact = { "Critique": [], "Important": [], "À surveiller": [], "Informatif": [] };
+    periode.forEach((t) => { if (parImpact[t.impact]) parImpact[t.impact].push(t); });
+
+    const box = document.getElementById("rapport-contenu");
+    if (periode.length === 0) {
+      box.innerHTML = '<div class="empty">Aucune évolution détectée sur cette période.</div>';
+      return;
+    }
+
+    box.innerHTML = `
+      <h3>Veille réglementaire — synthèse (${jours} derniers jours)</h3>
+      <p style="color:var(--muted);">${periode.length} évolution(s) détectée(s), dont ${parImpact["Critique"].length} critique(s) et ${parImpact["Important"].length} importante(s).</p>
+      ${Object.entries(parImpact).filter(([, items]) => items.length).map(([impact, items]) => `
+        <h4>${impact}</h4>
+        ${items.map((t, i) => `
+          <div class="rapport-item">
+            <strong>${i + 1}. ${escapeHtml(t.titre)}</strong><br/>
+            ${escapeHtml(t.resume || "")}<br/>
+            <em>Action : ${(t.actionsRecommandees || []).join(" ; ") || "aucune action spécifique identifiée"}</em>
+            ${t.echeanceMiseEnConformite ? ` — Échéance : ${escapeHtml(t.echeanceMiseEnConformite)}` : ""}
+          </div>
+        `).join("")}
+      `).join("")}
+    `;
+  }
+
+  document.getElementById("rapport-periode").addEventListener("change", (e) => genererRapport(Number(e.target.value)));
+  document.getElementById("btn-copier-rapport").addEventListener("click", () => {
+    const texte = document.getElementById("rapport-contenu").innerText;
+    navigator.clipboard.writeText(texte).then(() => alert("Rapport copié dans le presse-papiers."));
+  });
+
+  // ---------- Utilitaires ----------
+  function escapeHtml(s) {
+    return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function formatDate(d) {
+    if (!d) return "date inconnue";
+    const date = d.toDate ? d.toDate() : new Date(d);
+    if (isNaN(date)) return String(d);
+    return date.toLocaleDateString("fr-FR");
+  }
+
+  // ---------- Chargement initial ----------
+  // Déclenché depuis onAuthStateChanged (plus haut dans ce même script) une
+  // fois la connexion + le rôle admin confirmés — pas ici, pour ne jamais
+  // interroger Firestore avant que les règles d'accès l'autorisent.
+</script>
+
+</body>
+</html>

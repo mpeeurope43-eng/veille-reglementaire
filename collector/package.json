@@ -1,0 +1,19 @@
+{
+  "name": "veille-reglementaire-collector",
+  "version": "1.0.0",
+  "description": "Moteur de collecte, analyse et scoring pour la veille réglementaire MPE Europe.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "seed:referentiels": "node scripts/seed-referentiels.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "rss-parser": "^3.13.0",
+    "nodemailer": "^6.9.14"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

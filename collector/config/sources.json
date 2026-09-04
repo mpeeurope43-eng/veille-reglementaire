@@ -1,0 +1,7 @@
+{
+  "eurlexRssUrl": "A_REMPLACER — URL du flux RSS obtenu via 'My RSS alerts' sur eur-lex.europa.eu, après avoir créé et sauvegardé une recherche avec les mots-clés du profil (voir README, étape 4).",
+  "pisteApiBaseUrl": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
+  "pisteTokenUrl": "https://oauth.piste.gouv.fr/api/oauth/token",
+  "legifranceRechercheParThemes": true,
+  "_commentaire": "pisteApiBaseUrl et pisteTokenUrl sont les endpoints officiels documentés par PISTE au moment de la rédaction (sept. 2026) — à revérifier dans la doc PISTE de ton compte au moment de la mise en place, ces URLs peuvent évoluer."
+}
