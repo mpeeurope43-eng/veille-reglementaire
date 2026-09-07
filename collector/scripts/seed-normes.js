@@ -19,8 +19,9 @@
  * workflow_dispatch), qui exécute aussi ce script.
  *
  * Se relance sans risque à chaque changement : les champs "reference", "titre", "dateNorme",
- * "theme" et "groupeExcel" sont toujours remis à jour depuis cette liste, mais "lien" et
- * "statut" (renseignés depuis le dashboard) sont conservés tels quels s'ils existent déjà.
+ * "theme" et "groupeExcel" sont toujours remis à jour depuis cette liste, mais "liens" (les
+ * liens ajoutés depuis le dashboard — plusieurs par norme possibles) et "statut" sont
+ * conservés tels quels s'ils existent déjà.
  *
  * "theme" vaut null pour les normes qui ne correspondent à aucun thème réglementaire suivi
  * actuellement (ex. cybersécurité industrielle).
@@ -93,13 +94,14 @@ async function seed() {
       theme: n.theme,
       groupeExcel: n.groupeExcel,
       lien: donneesExistantes.lien || "",
+      liens: donneesExistantes.liens || [],
       statut: donneesExistantes.statut || "À vérifier",
       derniereMiseAJour: new Date().toISOString(),
     });
 
     if (existant.exists) {
       nbMisAJour++;
-      console.log(`~ "${n.reference}" mis à jour (lien/statut conservés).`);
+      console.log(`~ "${n.reference}" mis à jour (liens/statut conservés).`);
     } else {
       nbAjoutes++;
       console.log(`+ "${n.reference}" ajouté.`);
