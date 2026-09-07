@@ -96,6 +96,9 @@
   .actions ul { margin: 4px 0 0 18px; padding: 0; }
   .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 0.82rem; }
   .card-footer a { color: var(--navy); }
+  .theme-groupe { margin-bottom: 26px; }
+  .theme-titre { color: var(--navy); font-size: 1rem; margin: 0 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--gold); }
+  .theme-count { color: var(--muted); font-weight: 400; font-size: 0.85rem; }
   .tag-fait { background: #EEF2FF; color: var(--navy); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; }
   .empty { color: var(--muted); text-align: center; padding: 40px; }
 
@@ -240,6 +243,9 @@
         <option value="Probablement">Probablement</option>
         <option value="À vérifier">À vérifier</option>
         <option value="Non pertinent">Non pertinent</option>
+      </select>
+      <select id="filtre-theme">
+        <option value="">Tous les thèmes</option>
       </select>
       <input type="text" id="filtre-recherche" placeholder="Rechercher un mot-clé…" />
     </div>
@@ -459,32 +465,37 @@
   // ---------- Tableau de bord ----------
   let tousLesTextes = [];
 
+  // Libellés lisibles des thèmes réglementaires du profil MPE Europe — à garder synchronisé
+  // avec collector/config/profil.json (themesReglementaires[].id/.nom) si de nouveaux thèmes
+  // y sont ajoutés. Utilisé à la fois ici (filtre + regroupement du tableau de bord) et dans
+  // le rapport périodique plus bas.
+  const LIBELLES_THEMES = {
+    "machines": "Sécurité des machines",
+    "atex": "ATEX — atmosphères explosives",
+    "contact-alimentaire": "Matériaux au contact alimentaire",
+    "ehedg": "Conception hygiénique (EHEDG)",
+    "ped": "Équipements sous pression",
+    "reach-clp": "REACH / CLP — substances chimiques",
+    "environnement": "Environnement / ICPE / émissions",
+    "export": "Douanes / export hors UE",
+    "ingenierie-be": "Responsabilité du bureau d'études / ingénierie",
+    "securite-chantier": "Sécurité lors des interventions / installations chez le client",
+    "sous-traitance": "Sous-traitance",
+  };
+  const THEME_AUTRE = "__autre__";
+
   function classeImpact(impact) {
     return { "Critique": "impact-critique", "Important": "impact-important", "À surveiller": "impact-a-surveiller", "Informatif": "impact-informatif" }[impact] || "";
   }
   function badgeImpact(impact) {
     return { "Critique": "critique", "Important": "important", "À surveiller": "a-surveiller", "Informatif": "informatif" }[impact] || "informatif";
   }
+  function libelleTheme(themeId) {
+    return LIBELLES_THEMES[themeId] || "Autre / non classé";
+  }
 
-  function rendreTextes() {
-    const impactVoulu = document.getElementById("filtre-impact").value;
-    const pertinenceVoulue = document.getElementById("filtre-pertinence").value;
-    const recherche = document.getElementById("filtre-recherche").value.toLowerCase();
-
-    const filtres = tousLesTextes.filter((t) => {
-      if (impactVoulu && t.impact !== impactVoulu) return false;
-      if (pertinenceVoulue && t.sommesNousConcernes !== pertinenceVoulue) return false;
-      if (recherche && !(t.titre || "").toLowerCase().includes(recherche)) return false;
-      return true;
-    });
-
-    const container = document.getElementById("liste-textes");
-    if (filtres.length === 0) {
-      container.innerHTML = '<div class="empty">Aucun texte pour ces filtres.</div>';
-      return;
-    }
-
-    container.innerHTML = filtres.map((t) => `
+  function carteTexte(t) {
+    return `
       <div class="card ${classeImpact(t.impact)}">
         <div class="card-top">
           <h3>${escapeHtml(t.titre || "(sans titre)")}</h3>
@@ -506,7 +517,66 @@
           <a href="${t.url}" target="_blank" rel="noopener">Source officielle ↗</a>
         </div>
       </div>
+    `;
+  }
+
+  function rendreTextes() {
+    const impactVoulu = document.getElementById("filtre-impact").value;
+    const pertinenceVoulue = document.getElementById("filtre-pertinence").value;
+    const themeVoulu = document.getElementById("filtre-theme").value;
+    const recherche = document.getElementById("filtre-recherche").value.toLowerCase();
+
+    const filtres = tousLesTextes.filter((t) => {
+      if (impactVoulu && t.impact !== impactVoulu) return false;
+      if (pertinenceVoulue && t.sommesNousConcernes !== pertinenceVoulue) return false;
+      if (themeVoulu) {
+        const th = LIBELLES_THEMES[t.themeId] ? t.themeId : THEME_AUTRE;
+        if (th !== themeVoulu) return false;
+      }
+      if (recherche && !(t.titre || "").toLowerCase().includes(recherche)) return false;
+      return true;
+    });
+
+    const container = document.getElementById("liste-textes");
+    if (filtres.length === 0) {
+      container.innerHTML = '<div class="empty">Aucun texte pour ces filtres.</div>';
+      return;
+    }
+
+    // Regroupement par thème pour une lecture claire (au lieu d'une liste en vrac) : un
+    // bloc par thème, trié par nombre de textes décroissant, "Autre / non classé" en dernier.
+    const parTheme = new Map();
+    filtres.forEach((t) => {
+      const cle = LIBELLES_THEMES[t.themeId] ? t.themeId : THEME_AUTRE;
+      if (!parTheme.has(cle)) parTheme.set(cle, []);
+      parTheme.get(cle).push(t);
+    });
+    const groupes = [...parTheme.entries()].sort((a, b) => {
+      if (a[0] === THEME_AUTRE) return 1;
+      if (b[0] === THEME_AUTRE) return -1;
+      return b[1].length - a[1].length;
+    });
+
+    container.innerHTML = groupes.map(([themeId, items]) => `
+      <div class="theme-groupe">
+        <h3 class="theme-titre">${escapeHtml(themeId === THEME_AUTRE ? "Autre / non classé" : LIBELLES_THEMES[themeId])} <span class="theme-count">(${items.length})</span></h3>
+        ${items.map(carteTexte).join("")}
+      </div>
     `).join("");
+  }
+
+  function peuplerFiltreTheme() {
+    const select = document.getElementById("filtre-theme");
+    const valeurActuelle = select.value;
+    const themesPresents = new Set(tousLesTextes.map((t) => (LIBELLES_THEMES[t.themeId] ? t.themeId : THEME_AUTRE)));
+    const options = Object.keys(LIBELLES_THEMES)
+      .filter((id) => themesPresents.has(id))
+      .map((id) => ({ id, nom: LIBELLES_THEMES[id] }));
+    if (themesPresents.has(THEME_AUTRE)) options.push({ id: THEME_AUTRE, nom: "Autre / non classé" });
+
+    select.innerHTML = '<option value="">Tous les thèmes</option>' +
+      options.map((o) => `<option value="${o.id}">${escapeHtml(o.nom)}</option>`).join("");
+    select.value = valeurActuelle;
   }
 
   async function chargerTextes() {
@@ -519,6 +589,8 @@
     document.getElementById("stat-surveiller").textContent = tousLesTextes.filter((t) => t.impact === "À surveiller").length;
     document.getElementById("stat-total").textContent = tousLesTextes.length;
 
+    peuplerFiltreTheme();
+
     if (tousLesTextes.length && tousLesTextes[0].dateDetection) {
       const d = tousLesTextes[0].dateDetection.toDate ? tousLesTextes[0].dateDetection.toDate() : new Date(tousLesTextes[0].dateDetection);
       document.getElementById("derniere-maj").textContent = "Dernière mise à jour : " + formatDate(d);
@@ -527,7 +599,7 @@
     rendreTextes();
   }
 
-  ["filtre-impact", "filtre-pertinence", "filtre-recherche"].forEach((id) =>
+  ["filtre-impact", "filtre-pertinence", "filtre-theme", "filtre-recherche"].forEach((id) =>
     document.getElementById(id).addEventListener("input", rendreTextes)
   );
 
@@ -596,19 +668,7 @@
   }
 
   // ---------- Rapport périodique ----------
-  // Libellés lisibles des thèmes réglementaires du profil MPE Europe — à garder
-  // synchronisé avec collector/config/profil.json (themesReglementaires[].id/.nom)
-  // si de nouveaux thèmes y sont ajoutés.
-  const LIBELLES_THEMES = {
-    "machines": "Sécurité des machines",
-    "atex": "ATEX — atmosphères explosives",
-    "contact-alimentaire": "Matériaux au contact alimentaire",
-    "ehedg": "Conception hygiénique (EHEDG)",
-    "ped": "Équipements sous pression",
-    "reach-clp": "REACH / CLP — substances chimiques",
-    "environnement": "Environnement / ICPE / émissions",
-    "export": "Douanes / export hors UE",
-  };
+  // (LIBELLES_THEMES est défini plus haut, section "Tableau de bord" — réutilisé ici.)
 
   function construireResume(periode, parImpact, jours) {
     const parTheme = {};

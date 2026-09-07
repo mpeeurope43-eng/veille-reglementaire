@@ -1,0 +1,32 @@
+name: Initialiser la base de connaissances
+
+# Déclenchement manuel uniquement (Actions → "Initialiser la base de connaissances" → Run
+# workflow) : remplit/complète la collection veille/referentiels avec les fiches par thème
+# réglementaire définies dans collector/scripts/seed-referentiels.js. Sans effet sur les
+# fiches déjà existantes (ne écrase pas les liens vers des documents internes déjà ajoutés
+# depuis le dashboard) — se relance donc sans risque à chaque ajout de nouveau thème.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: collector
+        run: npm install
+
+      - name: Initialiser la base de connaissances
+        working-directory: collector
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/seed-referentiels.js

@@ -98,6 +98,39 @@ const referentiels = [
     liensDocumentsInternes: [],
     statut: "À vérifier",
   },
+  {
+    id: "ingenierie-be",
+    nom: "Responsabilité du bureau d'études / ingénierie",
+    domaine: "BE process / maîtrise d'œuvre",
+    resumeBesoin:
+      "Concerne les missions de conception, dimensionnement et maîtrise d'œuvre d'installations chez le client : garantie décennale (10 ans, désordres affectant la solidité ou la destination de l'ouvrage) et responsabilité civile professionnelle pour le reste (erreurs de conseil, retards, préjudices immatériels).",
+    referentiels: ["Loi Spinetta (1978)", "Code civil, art. 1792 et s. (garantie décennale)"],
+    liensSourcesOfficielles: [],
+    liensDocumentsInternes: [],
+    statut: "À vérifier",
+  },
+  {
+    id: "securite-chantier",
+    nom: "Sécurité lors des interventions / installations chez le client",
+    domaine: "Installation / mise en service",
+    resumeBesoin:
+      "S'applique dès qu'une équipe MPE intervient sur le site d'un client : plan de prévention obligatoire (entreprise extérieure / entreprise utilisatrice) et, si l'opération relève du bâtiment ou du génie civil avec plusieurs entreprises, coordination SPS + PPSPS.",
+    referentiels: ["Code du travail (plan de prévention, entreprises extérieures)", "Coordination SPS"],
+    liensSourcesOfficielles: [],
+    liensDocumentsInternes: [],
+    statut: "À vérifier",
+  },
+  {
+    id: "sous-traitance",
+    nom: "Sous-traitance",
+    domaine: "Contrats / relations donneur d'ordre-sous-traitant",
+    resumeBesoin:
+      "MPE peut être donneuse d'ordre ou sous-traitante selon les projets — obligations réciproques (agrément du sous-traitant, garantie de paiement côté donneur d'ordre, action directe côté sous-traitant).",
+    referentiels: ["Loi n°75-1334 du 31 décembre 1975"],
+    liensSourcesOfficielles: [],
+    liensDocumentsInternes: [],
+    statut: "À vérifier",
+  },
 ];
 
 async function seed() {

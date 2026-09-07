@@ -4,12 +4,16 @@
   "groupe": "Filiale européenne de Modern Process Equipment (MPE, Chicago), ex-COJIT",
   "effectif": "~6 personnes",
   "paysActivite": ["France", "Union européenne"],
-  "fabricantOuIntegrateur": "A_VALIDER",
+  "fabricantOuIntegrateur": "Fabricant ET intégrateur/installateur (double responsabilité : conception d'équipements et mise en service chez le client)",
   "activites": [
     "Broyage / réduction granulométrique de matières sèches",
     "Transport de matières en vrac (convoyeurs à vis, convoyeurs tubulaires à chaîne, trémies)",
     "Tuyauterie et cuves inox",
-    "Ingénierie, dimensionnement, devis, SAV / pièces de rechange"
+    "Ingénierie et bureau d'études process complet (conception, dimensionnement, maîtrise d'œuvre d'installations industrielles)",
+    "Prestations de chef de projet / AMO pour clients industriels privés (pas de marchés publics)",
+    "Installation et mise en service d'équipements chez le client",
+    "SAV / pièces de rechange",
+    "Sous-traitance ponctuelle, dans les deux sens (MPE sous-traitante ou donneuse d'ordre selon les projets)"
   ],
   "secteursClients": ["Café", "Dry foods", "Pet food", "Chimie", "Minéraux", "Agroalimentaire"],
   "equipementsEtMateriaux": [
@@ -72,10 +76,27 @@
       "nom": "Douanes / export hors UE",
       "textesCles": [],
       "motsClesRecherche": ["export équipement industriel", "douane machine"]
+    },
+    {
+      "id": "ingenierie-be",
+      "nom": "Responsabilité du bureau d'études / ingénierie",
+      "textesCles": ["Loi Spinetta (1978)", "Garantie décennale (Code civil art. 1792)"],
+      "motsClesRecherche": ["responsabilité décennale", "bureau d'études techniques"]
+    },
+    {
+      "id": "securite-chantier",
+      "nom": "Sécurité lors des interventions / installations chez le client",
+      "textesCles": ["Code du travail — entreprises extérieures (plan de prévention)", "Coordination SPS"],
+      "motsClesRecherche": ["plan de prévention", "coordination SPS"]
+    },
+    {
+      "id": "sous-traitance",
+      "nom": "Sous-traitance",
+      "textesCles": ["Loi n°75-1334 du 31 décembre 1975"],
+      "motsClesRecherche": ["sous-traitance obligations", "donneur d'ordre sous-traitant"]
     }
   ],
   "aValider": [
-    "Fabricant ou intégrateur (responsabilité marquage CE) ?",
     "Présence réelle de transport pneumatique de poudres (risque ATEX) ?",
     "Certifications déjà suivies en interne (ISO 9001, IFS/BRC clients) ?",
     "Installations réalisées uniquement en France ou aussi ailleurs en UE ?"
