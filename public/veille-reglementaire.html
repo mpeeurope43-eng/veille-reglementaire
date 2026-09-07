@@ -279,6 +279,19 @@
     <p style="color:var(--muted); font-size:0.85rem; margin-top:0;">
       Fiches de référence par thème réglementaire. Ajoute ici tes propres liens vers des documents internes MPE (procédures, notices, certificats).
     </p>
+
+    <div class="ref-card nouvelle-fiche" style="margin-bottom:16px; border:1px dashed var(--border);">
+      <h3>+ Nouvelle fiche</h3>
+      <p style="font-size:0.75rem; color:var(--muted); margin:0 0 8px;">
+        Crée une fiche de référence libre (pense-bête interne). Elle n'est pas reliée automatiquement à l'analyse IA des textes — pour ça (classement automatique des textes détectés sous ce thème), demande-moi de l'intégrer au profil réglementaire.
+      </p>
+      <input type="text" id="nf-nom" placeholder="Nom de la fiche / du thème (ex: Cybersécurité industrielle)" style="width:100%; margin-bottom:6px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+      <input type="text" id="nf-domaine" placeholder="Domaine (ex: Sécurité, Agroalimentaire, Contrats…)" style="width:100%; margin-bottom:6px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+      <textarea id="nf-resume" placeholder="Résumé du besoin / pourquoi c'est pertinent pour MPE Europe…" style="width:100%; min-height:60px; font-family:inherit; font-size:0.85rem; padding:6px; border:1px solid var(--border); border-radius:6px; resize:vertical; margin-bottom:6px;"></textarea>
+      <button class="btn" id="btn-creer-fiche">Créer la fiche</button>
+      <span class="save-status" id="nf-status"></span>
+    </div>
+
     <div class="ref-grid" id="liste-referentiels"></div>
   </section>
 
@@ -638,6 +651,55 @@
   ["filtre-impact", "filtre-pertinence", "filtre-theme", "filtre-recherche"].forEach((id) =>
     document.getElementById(id).addEventListener("input", rendreTextes)
   );
+
+  function slugifier(texte) {
+    return texte
+      .normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  }
+
+  document.getElementById("btn-creer-fiche").addEventListener("click", async () => {
+    const nom = document.getElementById("nf-nom").value.trim();
+    const domaine = document.getElementById("nf-domaine").value.trim();
+    const resumeBesoin = document.getElementById("nf-resume").value.trim();
+    const status = document.getElementById("nf-status");
+
+    if (!nom) {
+      status.textContent = "Le nom est obligatoire.";
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+
+    let id = slugifier(nom);
+    if (!id) {
+      status.textContent = "Nom invalide.";
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+    const existant = await getDoc(doc(db, "veille", "referentiels", "items", id));
+    if (existant.exists()) id = `${id}-${Date.now().toString().slice(-4)}`;
+
+    await setDoc(doc(db, "veille", "referentiels", "items", id), {
+      id,
+      nom,
+      domaine,
+      resumeBesoin,
+      referentiels: [],
+      liensSourcesOfficielles: [],
+      liensDocumentsInternes: [],
+      statut: "À vérifier",
+      derniereMiseAJour: new Date().toISOString(),
+    });
+
+    document.getElementById("nf-nom").value = "";
+    document.getElementById("nf-domaine").value = "";
+    document.getElementById("nf-resume").value = "";
+    status.textContent = "Fiche créée ✓";
+    setTimeout(() => (status.textContent = ""), 2500);
+    chargerReferentiels();
+  });
 
   // ---------- Base de connaissances ----------
   async function chargerReferentiels() {
