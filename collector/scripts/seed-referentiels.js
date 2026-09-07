@@ -59,6 +59,17 @@ const referentiels = [
     statut: "À vérifier",
   },
   {
+    id: "haccp",
+    nom: "HACCP — sécurité sanitaire des aliments",
+    domaine: "Agroalimentaire / pet food",
+    resumeBesoin:
+      "Les clients agroalimentaires/pet food conduisent une analyse HACCP sur leurs lignes de production : les équipements MPE (broyeurs, convoyeurs, trémies, cuves) doivent être conçus pour ne pas créer de point critique (zones de rétention, contamination croisée, nettoyabilité).",
+    referentiels: ["Règlement (CE) 852/2004", "Principes HACCP (Codex Alimentarius)"],
+    liensSourcesOfficielles: ["https://eur-lex.europa.eu/legal-content/FR/TXT/?uri=CELEX:32004R0852"],
+    liensDocumentsInternes: [],
+    statut: "À vérifier",
+  },
+  {
     id: "ped",
     nom: "Équipements sous pression (PED)",
     domaine: "Sécurité des équipements",

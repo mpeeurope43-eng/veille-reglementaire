@@ -44,14 +44,20 @@
     {
       "id": "contact-alimentaire",
       "nom": "Matériaux au contact alimentaire",
-      "textesCles": ["Règlement (CE) 1935/2004"],
-      "motsClesRecherche": ["contact alimentaire", "matériaux alimentaires", "inox alimentaire"]
+      "textesCles": ["Règlement (CE) 1935/2004", "Règlement (UE) 10/2011 (matériaux plastiques)", "Règlement (CE) 2023/2006 (bonnes pratiques de fabrication)"],
+      "motsClesRecherche": ["contact alimentaire", "matériaux alimentaires", "inox alimentaire", "bonnes pratiques de fabrication"]
     },
     {
       "id": "ehedg",
       "nom": "Conception hygiénique (EHEDG)",
       "textesCles": ["Lignes directrices EHEDG"],
       "motsClesRecherche": ["conception hygiénique", "EHEDG", "hygienic design"]
+    },
+    {
+      "id": "haccp",
+      "nom": "HACCP — sécurité sanitaire des aliments",
+      "textesCles": ["Règlement (CE) 852/2004 (hygiène des denrées alimentaires)", "Principes HACCP (Codex Alimentarius)"],
+      "motsClesRecherche": ["HACCP", "hygiène des denrées alimentaires"]
     },
     {
       "id": "ped",

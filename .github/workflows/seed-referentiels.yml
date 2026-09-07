@@ -1,10 +1,12 @@
 name: Initialiser la base de connaissances
 
 # Déclenchement manuel uniquement (Actions → "Initialiser la base de connaissances" → Run
-# workflow) : remplit/complète la collection veille/referentiels avec les fiches par thème
-# réglementaire définies dans collector/scripts/seed-referentiels.js. Sans effet sur les
-# fiches déjà existantes (ne écrase pas les liens vers des documents internes déjà ajoutés
-# depuis le dashboard) — se relance donc sans risque à chaque ajout de nouveau thème.
+# workflow) : remplit/complète la collection veille/referentiels (fiches par thème) et
+# veille/normes (normes techniques NF/EN/ISO applicables), définies dans
+# collector/scripts/seed-referentiels.js et collector/scripts/seed-normes.js. Sans effet sur
+# les fiches/normes déjà existantes (ne écrase pas les liens déjà ajoutés depuis le
+# dashboard) — se relance donc sans risque à chaque ajout de nouveau thème ou de nouvelle
+# norme.
 on:
   workflow_dispatch: {}
 
@@ -30,3 +32,9 @@ jobs:
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node scripts/seed-referentiels.js
+
+      - name: Initialiser les normes applicables
+        working-directory: collector
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node scripts/seed-normes.js
