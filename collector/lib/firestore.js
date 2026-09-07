@@ -55,3 +55,16 @@ export async function chargerSeuils(db, seuilsParDefaut) {
   if (snap.exists) return { ...seuilsParDefaut, ...snap.data() };
   return seuilsParDefaut;
 }
+
+/**
+ * Charge la liste des destinataires additionnels d'alertes email (gérée depuis l'onglet
+ * Rapport périodique du dashboard) : chacun ne reçoit une alerte que pour les thèmes qu'il a
+ * choisis (ou tous, via "tous" dans le tableau themes). Ignore les entrées désactivées
+ * (actif === false).
+ */
+export async function chargerAbonnements(db) {
+  const snap = await db.collection("veille").doc("abonnements").collection("items").get();
+  return snap.docs
+    .map((d) => d.data())
+    .filter((a) => a.actif !== false && a.email);
+}

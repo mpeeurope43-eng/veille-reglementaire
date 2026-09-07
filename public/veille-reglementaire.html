@@ -35,6 +35,16 @@
   }
   header h1 { margin: 0; font-size: 1.3rem; font-weight: 600; }
   header .sub { font-size: 0.85rem; opacity: 0.8; margin-top: 2px; }
+  .intro-fonctions {
+    background: #EEF2FF;
+    padding: 12px 32px;
+    font-size: 0.8rem;
+    color: var(--navy);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 24px;
+  }
+  .intro-fonctions p { margin: 0; max-width: 280px; }
   nav {
     display: flex;
     gap: 4px;
@@ -125,6 +135,10 @@
   .norme-liens-list a { color: var(--navy); word-break: break-all; }
   .btn-lien-supprimer { border: none; background: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0 2px; flex-shrink: 0; }
   .btn-lien-supprimer:hover { color: #c0392b; }
+  .abonnement-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+  .abonnement-item:last-child { border-bottom: none; }
+  .abonnement-email { font-weight: 600; color: var(--navy); }
+  .abonnement-themes { color: var(--muted); flex: 1; }
   .tag-fait { background: #EEF2FF; color: var(--navy); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; }
   .empty { color: var(--muted); text-align: center; padding: 40px; }
 
@@ -240,6 +254,13 @@
   <div class="sub" id="derniere-maj">Dernière mise à jour : —</div>
 </header>
 
+<div class="intro-fonctions">
+  <p><strong>Tableau de bord</strong> — tous les textes réglementaires détectés et analysés par l'IA chaque jour, filtrables par impact, pertinence, thème ou mot-clé.</p>
+  <p><strong>Base de connaissances</strong> — une fiche par thème réglementaire (résumé du besoin, textes de référence, tes propres liens vers des documents internes) ; tu peux en créer de nouvelles.</p>
+  <p><strong>Normes applicables</strong> — les normes techniques NF/EN/ISO pertinentes pour l'activité de MPE Europe, classées par catégorie, avec liens et notes.</p>
+  <p><strong>Rapport périodique</strong> — une synthèse (7/30/90 jours) à copier-coller, et la gestion des destinataires d'alertes email par thème.</p>
+</div>
+
 <nav>
   <button class="tab-btn active" data-tab="dashboard">Tableau de bord</button>
   <button class="tab-btn" data-tab="connaissances">Base de connaissances</button>
@@ -332,6 +353,20 @@
 
   <!-- RAPPORT PÉRIODIQUE -->
   <section id="tab-rapport" style="display:none;">
+    <div class="ref-card" style="margin-bottom:16px;">
+      <h3>Alertes email par thème</h3>
+      <p style="font-size:0.75rem; color:var(--muted); margin:0 0 10px;">
+        L'adresse principale (configurée en secret GitHub) reçoit une alerte pour tout texte "Critique". Tu peux ajouter d'autres destinataires qui ne seront alertés que sur les thèmes qu'ils choisissent — utile si un collègue ne doit être prévenu que sur son domaine (ex: HACCP).
+      </p>
+      <div id="liste-abonnements"></div>
+      <div style="margin-top:10px; padding-top:10px; border-top:1px solid var(--border);">
+        <input type="email" id="ab-email" placeholder="email@exemple.com" style="width:100%; margin-bottom:8px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+        <div id="ab-themes-checkboxes" style="display:flex; flex-wrap:wrap; gap:10px; font-size:0.8rem; margin-bottom:8px;"></div>
+        <button class="btn" id="btn-ajouter-abonnement">Ajouter ce destinataire</button>
+        <span class="save-status" id="ab-status"></span>
+      </div>
+    </div>
+
     <div class="rapport-controls">
       <select id="rapport-periode">
         <option value="7">7 derniers jours</option>
@@ -351,7 +386,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy, arrayUnion, arrayRemove, getDoc
+    getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc, query, orderBy, arrayUnion, arrayRemove, getDoc
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, getIdTokenResult,
@@ -512,6 +547,7 @@
         chargerTextes().then(function(){ genererRapport(Number(document.getElementById('rapport-periode').value)); });
         chargerReferentiels();
         chargerNormes();
+        chargerAbonnements();
         if(eraitVerrouille) _verrouillerSession();
       }).catch(function(err){
         console.error('Erreur de lecture du rôle :', err);
@@ -999,6 +1035,92 @@
     status.textContent = "Norme créée ✓";
     setTimeout(() => (status.textContent = ""), 2500);
     chargerNormes();
+  });
+
+  // ---------- Abonnements alertes par thème (onglet Rapport périodique) ----------
+  // (LIBELLES_THEMES est défini plus haut, section "Tableau de bord" — réutilisé ici.)
+  const THEME_TOUS_ABONNEMENT = "tous";
+
+  function peuplerThemesCheckboxesAbonnement() {
+    const container = document.getElementById("ab-themes-checkboxes");
+    const options = Object.entries(LIBELLES_THEMES)
+      .map(([id, nom]) => `<label style="display:flex; align-items:center; gap:4px;"><input type="checkbox" class="ab-theme-checkbox" value="${id}" /> ${escapeHtml(nom)}</label>`)
+      .join("");
+    container.innerHTML =
+      `<label style="display:flex; align-items:center; gap:4px; font-weight:600;"><input type="checkbox" id="ab-tous" /> Tous les thèmes</label>` + options;
+
+    document.getElementById("ab-tous").addEventListener("change", (e) => {
+      container.querySelectorAll(".ab-theme-checkbox").forEach((cb) => {
+        cb.disabled = e.target.checked;
+        if (e.target.checked) cb.checked = false;
+      });
+    });
+  }
+  peuplerThemesCheckboxesAbonnement();
+
+  function rendreAbonnements(abonnements) {
+    const container = document.getElementById("liste-abonnements");
+    if (abonnements.length === 0) {
+      container.innerHTML = '<div style="font-size:0.8rem; color:var(--muted);">Aucun destinataire additionnel pour l\'instant.</div>';
+      return;
+    }
+    container.innerHTML = abonnements.map((a) => {
+      const libelle = (a.themes || []).includes(THEME_TOUS_ABONNEMENT)
+        ? "Tous les thèmes"
+        : (a.themes || []).map((t) => LIBELLES_THEMES[t] || t).join(", ") || "Aucun thème";
+      return `
+        <div class="abonnement-item" data-id="${a.id}">
+          <span class="abonnement-email">${escapeHtml(a.email)}</span>
+          <span class="abonnement-themes">${escapeHtml(libelle)}</span>
+          <button class="btn-lien-supprimer retirer-abonnement" data-id="${a.id}" title="Retirer ce destinataire">✕</button>
+        </div>
+      `;
+    }).join("");
+
+    container.querySelectorAll(".retirer-abonnement").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        await deleteDoc(doc(db, "veille", "abonnements", "items", btn.dataset.id));
+        chargerAbonnements();
+      });
+    });
+  }
+
+  async function chargerAbonnements() {
+    const snap = await getDocs(collection(db, "veille", "abonnements", "items"));
+    rendreAbonnements(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+  }
+
+  document.getElementById("btn-ajouter-abonnement").addEventListener("click", async () => {
+    const emailInput = document.getElementById("ab-email");
+    const email = emailInput.value.trim().toLowerCase();
+    const status = document.getElementById("ab-status");
+    const tousCoche = document.getElementById("ab-tous").checked;
+    const themesCoches = [...document.querySelectorAll(".ab-theme-checkbox:checked")].map((cb) => cb.value);
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      status.textContent = "Email invalide.";
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+    if (!tousCoche && themesCoches.length === 0) {
+      status.textContent = 'Choisis au moins un thème (ou "Tous les thèmes").';
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+
+    await setDoc(doc(db, "veille", "abonnements", "items", email), {
+      email,
+      themes: tousCoche ? [THEME_TOUS_ABONNEMENT] : themesCoches,
+      actif: true,
+      derniereMiseAJour: new Date().toISOString(),
+    });
+
+    emailInput.value = "";
+    document.getElementById("ab-tous").checked = false;
+    document.querySelectorAll(".ab-theme-checkbox").forEach((cb) => { cb.disabled = false; cb.checked = false; });
+    status.textContent = "Ajouté ✓";
+    setTimeout(() => (status.textContent = ""), 2500);
+    chargerAbonnements();
   });
 
   // ---------- Rapport périodique ----------

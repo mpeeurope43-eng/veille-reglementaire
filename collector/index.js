@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { recupererEurLex } from "./sources/eurlex.js";
 import { rechercherLegifrance } from "./sources/legifrance.js";
-import { initFirestore, existeDeja, enregistrerTexte, chargerSeuils } from "./lib/firestore.js";
+import { initFirestore, existeDeja, enregistrerTexte, chargerSeuils, chargerAbonnements } from "./lib/firestore.js";
 import { analyserTexte } from "./lib/analyze.js";
 import { envoyerAlerte } from "./lib/notify.js";
 
@@ -14,6 +14,7 @@ const log = { debut: new Date().toISOString(), etapes: [], erreurs: [] };
 async function main() {
   const db = initFirestore();
   const seuils = await chargerSeuils(db, seuilsParDefaut);
+  const abonnements = await chargerAbonnements(db);
 
   // --- 1. Collecte ---
   const depuisDate = dateIlYA(2); // fenêtre de sécurité de 2 jours pour ne rien manquer entre deux exécutions
@@ -76,16 +77,28 @@ async function main() {
 
       const critique = analyse.score >= seuils.critiqueMin;
       if (critique && seuils.alerteImmediateActive) {
-        await envoyerAlerte({
-          smtpHost: process.env.SMTP_HOST,
-          smtpPort: process.env.SMTP_PORT,
-          smtpUser: process.env.SMTP_USER,
-          smtpPass: process.env.SMTP_PASS,
-          destinataire: process.env.ALERT_EMAIL_TO,
-          texte,
-          analyse,
-        });
-        nbAlertes++;
+        // Destinataire principal (ALERT_EMAIL_TO, reçoit tout) + abonnés ciblés par thème
+        // (gérés depuis l'onglet Rapport périodique du dashboard), sans doublon.
+        const destinataires = new Set();
+        if (process.env.ALERT_EMAIL_TO) destinataires.add(process.env.ALERT_EMAIL_TO);
+        for (const ab of abonnements) {
+          const themes = ab.themes || [];
+          const concerne = themes.includes("tous") || (analyse.themeId && themes.includes(analyse.themeId));
+          if (concerne) destinataires.add(ab.email);
+        }
+
+        for (const destinataire of destinataires) {
+          await envoyerAlerte({
+            smtpHost: process.env.SMTP_HOST,
+            smtpPort: process.env.SMTP_PORT,
+            smtpUser: process.env.SMTP_USER,
+            smtpPass: process.env.SMTP_PASS,
+            destinataire,
+            texte,
+            analyse,
+          });
+          nbAlertes++;
+        }
       }
 
       log.etapes.push(`✓ "${texte.titre.slice(0, 80)}" — score ${analyse.score}, impact ${analyse.impact}.`);

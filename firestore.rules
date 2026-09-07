@@ -32,6 +32,11 @@ service cloud.firestore {
       allow write: if estAdmin();
     }
 
+    match /veille/abonnements/items/{docId} {
+      allow read: if estAdmin();
+      allow write: if estAdmin();
+    }
+
     match /veille/config/params/{docId} {
       allow read: if estAdmin();
       allow write: if estAdmin();
