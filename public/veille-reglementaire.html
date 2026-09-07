@@ -116,12 +116,15 @@
   .norme-ref { font-weight: 600; color: var(--navy); font-size: 0.92rem; }
   .norme-titre { color: var(--muted); font-size: 0.82rem; margin-top: 2px; }
   .norme-date { color: var(--muted); font-size: 0.75rem; margin-top: 2px; }
+  .norme-note { width: 100%; min-height: 40px; font-family: inherit; font-size: 0.8rem; padding: 6px; border: 1px solid var(--border); border-radius: 6px; resize: vertical; margin-top: 6px; }
   .norme-lien-actions { display: flex; flex-direction: column; gap: 6px; min-width: 240px; }
   .norme-lien-actions .add-doc { margin-top: 0; }
   .norme-lien-actions input { width: 220px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.78rem; }
   .norme-liens-list { font-size: 0.78rem; margin: 0; padding: 0; list-style: none; }
-  .norme-liens-list li { margin-bottom: 3px; }
-  .norme-liens-list a { display: block; color: var(--navy); word-break: break-all; }
+  .norme-liens-list li { margin-bottom: 3px; display: flex; align-items: center; gap: 6px; }
+  .norme-liens-list a { color: var(--navy); word-break: break-all; }
+  .btn-lien-supprimer { border: none; background: none; color: var(--muted); cursor: pointer; font-size: 0.75rem; padding: 0 2px; flex-shrink: 0; }
+  .btn-lien-supprimer:hover { color: #c0392b; }
   .tag-fait { background: #EEF2FF; color: var(--navy); padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; }
   .empty { color: var(--muted); text-align: center; padding: 40px; }
 
@@ -133,6 +136,8 @@
   .ref-card .liens-list { font-size: 0.8rem; margin: 6px 0; }
   .ref-card .liens-list a { display: block; color: var(--navy); word-break: break-all; }
   .ref-card .liens-list li { margin-bottom: 3px; list-style: none; margin-left: 0; padding-left: 0; }
+  .ref-card .liens-internes li { display: flex; align-items: center; gap: 6px; }
+  .ref-card .liens-internes a { display: inline; }
   .ref-card ul { padding-left: 0; }
   .add-doc { display: flex; gap: 6px; margin-top: 8px; }
   .add-doc input { flex: 1; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; }
@@ -303,6 +308,20 @@
     <p style="color:var(--muted); font-size:0.85rem; margin-top:0;">
       Normes techniques (NF/EN/ISO) potentiellement applicables aux équipements et prestations MPE Europe, classées par catégorie (reprises de ta liste de départ). Liste à enrichir — ajoute un lien (boutique AFNOR, résumé, notice) et ajuste le statut selon la pertinence réelle pour chaque projet.
     </p>
+
+    <div class="ref-card nouvelle-fiche" style="margin-bottom:16px; border:1px dashed var(--border);">
+      <h3>+ Nouvelle norme</h3>
+      <input type="text" id="nn-reference" placeholder="Référence (ex: NF EN ISO 12100)" style="width:100%; margin-bottom:6px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+      <input type="text" id="nn-titre" placeholder="Titre de la norme" style="width:100%; margin-bottom:6px; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+      <div style="display:flex; gap:6px; margin-bottom:6px;">
+        <input type="text" id="nn-date" placeholder="Édition (ex: 2020-01-01, optionnel)" style="flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;" />
+        <select id="nn-groupe" style="flex:1; padding:6px 8px; border:1px solid var(--border); border-radius:6px; font-size:0.85rem;"></select>
+      </div>
+      <textarea id="nn-note" placeholder="Note / précision (optionnel)…" style="width:100%; min-height:50px; font-family:inherit; font-size:0.85rem; padding:6px; border:1px solid var(--border); border-radius:6px; resize:vertical; margin-bottom:6px;"></textarea>
+      <button class="btn" id="btn-creer-norme">Créer la norme</button>
+      <span class="save-status" id="nn-status"></span>
+    </div>
+
     <div class="filters">
       <select id="filtre-theme-normes">
         <option value="">Toutes les catégories</option>
@@ -332,7 +351,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy, arrayUnion, getDoc
+    getFirestore, collection, getDocs, doc, setDoc, updateDoc, query, orderBy, arrayUnion, arrayRemove, getDoc
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import {
     getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, getIdTokenResult,
@@ -725,10 +744,10 @@
         </ul>
         <strong style="font-size:0.8rem;">Documents internes MPE :</strong>
         <ul class="liens-list liens-internes" data-id="${r.id}">
-          ${(r.liensDocumentsInternes || []).map((l) => `<li><a href="${l}" target="_blank" rel="noopener">📎 ${l}</a></li>`).join("")}
+          ${(r.liensDocumentsInternes || []).map((l) => `<li><a href="${l}" target="_blank" rel="noopener">📎 ${l}</a> <button class="btn-lien-supprimer retirer-lien" data-id="${r.id}" data-url="${escapeHtml(l)}" title="Retirer ce lien">✕</button></li>`).join("")}
         </ul>
         <div class="add-doc">
-          <input type="text" placeholder="URL d'un document interne…" class="input-nouveau-lien" data-id="${r.id}" />
+          <input type="text" placeholder="URL d'un document interne (https://…)" class="input-nouveau-lien" data-id="${r.id}" />
           <button class="btn ajouter-lien" data-id="${r.id}">Ajouter</button>
         </div>
         <div style="margin-top:8px;">
@@ -742,13 +761,28 @@
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         const input = container.querySelector(`.input-nouveau-lien[data-id="${id}"]`);
-        const url = input.value.trim();
-        if (!url) return;
+        const url = normaliserLienOuNull(input.value);
+        if (!url) {
+          alert("Lien invalide : utilise une adresse web (https://…), pas un chemin de fichier local ou un lecteur réseau (T:\\..., \\\\serveur\\...) — ce genre de chemin ne s'ouvre que depuis ton propre PC, pas depuis le dashboard.");
+          return;
+        }
         await updateDoc(doc(db, "veille", "referentiels", "items", id), {
           liensDocumentsInternes: arrayUnion(url),
           derniereMiseAJour: new Date().toISOString(),
         });
         input.value = "";
+        chargerReferentiels();
+      });
+    });
+
+    container.querySelectorAll(".retirer-lien").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const url = btn.dataset.url;
+        await updateDoc(doc(db, "veille", "referentiels", "items", id), {
+          liensDocumentsInternes: arrayRemove(url),
+          derniereMiseAJour: new Date().toISOString(),
+        });
         chargerReferentiels();
       });
     });
@@ -833,13 +867,16 @@
               <div class="norme-ref">${escapeHtml(n.reference || "")}</div>
               <div class="norme-titre">${escapeHtml(n.titre || "")}</div>
               ${n.dateNorme ? `<div class="norme-date">Édition ${formatDate(n.dateNorme)}</div>` : ""}
+              <textarea class="norme-note" data-id="${n.id}" placeholder="Note / précision…">${escapeHtml(n.note || "")}</textarea>
+              <button class="btn btn-secondary btn-sauver-note-norme" data-id="${n.id}">Enregistrer la note</button>
+              <span class="save-status" data-id="note-${n.id}"></span>
             </div>
             <div class="norme-lien-actions">
               <ul class="norme-liens-list">
-                ${liens.map((l) => `<li><a href="${l}" target="_blank" rel="noopener">🔗 ${l}</a></li>`).join("")}
+                ${liens.map((l) => `<li><a href="${l}" target="_blank" rel="noopener">🔗 ${l}</a> <button class="btn-lien-supprimer retirer-lien-norme" data-id="${n.id}" data-url="${escapeHtml(l)}" title="Retirer ce lien">✕</button></li>`).join("")}
               </ul>
               <div class="add-doc">
-                <input type="text" class="input-lien-norme" data-id="${n.id}" placeholder="URL (boutique AFNOR, doc interne…)" />
+                <input type="text" class="input-lien-norme" data-id="${n.id}" placeholder="URL (boutique AFNOR, doc interne, https://…)" />
                 <button class="btn btn-secondary btn-ajouter-lien-norme" data-id="${n.id}">Ajouter</button>
               </div>
               <span class="save-status" data-id="norme-${n.id}"></span>
@@ -854,8 +891,11 @@
       btn.addEventListener("click", async () => {
         const id = btn.dataset.id;
         const input = container.querySelector(`.input-lien-norme[data-id="${id}"]`);
-        const url = input.value.trim();
-        if (!url) return;
+        const url = normaliserLienOuNull(input.value);
+        if (!url) {
+          alert("Lien invalide : utilise une adresse web (https://…), pas un chemin de fichier local ou un lecteur réseau (T:\\..., \\\\serveur\\...) — ce genre de chemin ne s'ouvre que depuis ton propre PC, pas depuis le dashboard.");
+          return;
+        }
         await updateDoc(doc(db, "veille", "normes", "items", id), {
           liens: arrayUnion(url),
           derniereMiseAJour: new Date().toISOString(),
@@ -867,6 +907,39 @@
         rendreNormes();
       });
     });
+
+    container.querySelectorAll(".retirer-lien-norme").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const url = btn.dataset.url;
+        const norme = toutesLesNormes.find((n) => n.id === id);
+        await updateDoc(doc(db, "veille", "normes", "items", id), {
+          liens: arrayRemove(url),
+          lien: norme && norme.lien === url ? "" : (norme ? norme.lien || "" : ""),
+          derniereMiseAJour: new Date().toISOString(),
+        });
+        if (norme) {
+          norme.liens = (norme.liens || []).filter((l) => l !== url);
+          if (norme.lien === url) norme.lien = "";
+        }
+        rendreNormes();
+      });
+    });
+
+    container.querySelectorAll(".btn-sauver-note-norme").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const texte = container.querySelector(`.norme-note[data-id="${id}"]`).value;
+        await updateDoc(doc(db, "veille", "normes", "items", id), {
+          note: texte,
+          derniereMiseAJour: new Date().toISOString(),
+        });
+        const norme = toutesLesNormes.find((n) => n.id === id);
+        if (norme) norme.note = texte;
+        const status = container.querySelector(`.save-status[data-id="note-${id}"]`);
+        if (status) { status.textContent = "Enregistré ✓"; setTimeout(() => (status.textContent = ""), 2000); }
+      });
+    });
   }
 
   async function chargerNormes() {
@@ -876,6 +949,57 @@
     rendreNormes();
   }
   document.getElementById("filtre-theme-normes").addEventListener("input", rendreNormes);
+
+  (function initFormulaireNouvelleNorme() {
+    const selectGroupe = document.getElementById("nn-groupe");
+    selectGroupe.innerHTML = ORDRE_GROUPES_NORMES.map((g) => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("")
+      + `<option value="${GROUPE_NORME_AUTRE}">Autre / non classé</option>`;
+  })();
+
+  document.getElementById("btn-creer-norme").addEventListener("click", async () => {
+    const reference = document.getElementById("nn-reference").value.trim();
+    const titre = document.getElementById("nn-titre").value.trim();
+    const dateSaisie = document.getElementById("nn-date").value.trim();
+    const groupeChoisi = document.getElementById("nn-groupe").value;
+    const note = document.getElementById("nn-note").value.trim();
+    const status = document.getElementById("nn-status");
+
+    if (!reference) {
+      status.textContent = "La référence est obligatoire.";
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+
+    let id = slugifier(reference);
+    if (!id) {
+      status.textContent = "Référence invalide.";
+      setTimeout(() => (status.textContent = ""), 2500);
+      return;
+    }
+    const existant = await getDoc(doc(db, "veille", "normes", "items", id));
+    if (existant.exists()) id = `${id}-${Date.now().toString().slice(-4)}`;
+
+    await setDoc(doc(db, "veille", "normes", "items", id), {
+      reference,
+      titre,
+      dateNorme: dateSaisie || null,
+      theme: null,
+      groupeExcel: groupeChoisi === GROUPE_NORME_AUTRE ? null : groupeChoisi,
+      note,
+      lien: "",
+      liens: [],
+      statut: "À vérifier",
+      derniereMiseAJour: new Date().toISOString(),
+    });
+
+    document.getElementById("nn-reference").value = "";
+    document.getElementById("nn-titre").value = "";
+    document.getElementById("nn-date").value = "";
+    document.getElementById("nn-note").value = "";
+    status.textContent = "Norme créée ✓";
+    setTimeout(() => (status.textContent = ""), 2500);
+    chargerNormes();
+  });
 
   // ---------- Rapport périodique ----------
   // (LIBELLES_THEMES est défini plus haut, section "Tableau de bord" — réutilisé ici.)
@@ -947,6 +1071,18 @@
   });
 
   // ---------- Utilitaires ----------
+  // Valide/normalise un lien saisi par l'utilisateur. Refuse les chemins locaux ou réseau
+  // (lecteur mappé "T:\...", chemin UNC "\\serveur\...") : cliquables uniquement sur le PC où
+  // le lecteur est mappé, pas depuis le dashboard web. Ajoute "https://" si le protocole est
+  // omis (ex: "afnor.org/xxx"). Retourne null si la valeur n'est pas récupérable en lien web.
+  function normaliserLienOuNull(valeur) {
+    const v = (valeur || "").trim();
+    if (!v) return null;
+    if (/^[a-zA-Z]:[\\/]/.test(v) || v.startsWith("\\\\")) return null;
+    if (/^https?:\/\//i.test(v) || /^mailto:/i.test(v)) return v;
+    return "https://" + v;
+  }
+
   function escapeHtml(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }

@@ -20,8 +20,12 @@
  *
  * Se relance sans risque à chaque changement : les champs "reference", "titre", "dateNorme",
  * "theme" et "groupeExcel" sont toujours remis à jour depuis cette liste, mais "liens" (les
- * liens ajoutés depuis le dashboard — plusieurs par norme possibles) et "statut" sont
- * conservés tels quels s'ils existent déjà.
+ * liens ajoutés depuis le dashboard — plusieurs par norme possibles), "note" (texte libre) et
+ * "statut" sont conservés tels quels s'ils existent déjà.
+ *
+ * Les normes créées directement depuis le dashboard (bouton "+ Nouvelle norme", pas dans ce
+ * fichier) ne sont pas affectées par ce script tant que leur id ne rentre pas en collision
+ * avec une entrée ci-dessous.
  *
  * "theme" vaut null pour les normes qui ne correspondent à aucun thème réglementaire suivi
  * actuellement (ex. cybersécurité industrielle).
@@ -95,6 +99,7 @@ async function seed() {
       groupeExcel: n.groupeExcel,
       lien: donneesExistantes.lien || "",
       liens: donneesExistantes.liens || [],
+      note: donneesExistantes.note || "",
       statut: donneesExistantes.statut || "À vérifier",
       derniereMiseAJour: new Date().toISOString(),
     });
