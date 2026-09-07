@@ -120,6 +120,17 @@
   .rapport-box h4 { color: var(--navy); margin-top: 18px; }
   .rapport-item { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
   .rapport-item:last-child { border-bottom: none; }
+  .rapport-resume {
+    background: #EEF2FF;
+    border: 1px solid #C7D2FE;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+  .rapport-resume strong { color: var(--navy); }
+  .rapport-resume ul { margin: 6px 0 0 18px; padding: 0; }
 
   /* ── Écrans d'authentification (login / 2FA / verrouillage / accès refusé) ──
      Même mécanisme que le reste de la Suite MPE (Firebase Authentication +
@@ -585,6 +596,47 @@
   }
 
   // ---------- Rapport périodique ----------
+  // Libellés lisibles des thèmes réglementaires du profil MPE Europe — à garder
+  // synchronisé avec collector/config/profil.json (themesReglementaires[].id/.nom)
+  // si de nouveaux thèmes y sont ajoutés.
+  const LIBELLES_THEMES = {
+    "machines": "Sécurité des machines",
+    "atex": "ATEX — atmosphères explosives",
+    "contact-alimentaire": "Matériaux au contact alimentaire",
+    "ehedg": "Conception hygiénique (EHEDG)",
+    "ped": "Équipements sous pression",
+    "reach-clp": "REACH / CLP — substances chimiques",
+    "environnement": "Environnement / ICPE / émissions",
+    "export": "Douanes / export hors UE",
+  };
+
+  function construireResume(periode, parImpact, jours) {
+    const parTheme = {};
+    periode.forEach((t) => {
+      const cle = t.themeId && LIBELLES_THEMES[t.themeId] ? t.themeId : (t.themeId || null);
+      if (!cle) return;
+      parTheme[cle] = (parTheme[cle] || 0) + 1;
+    });
+    const themesTries = Object.entries(parTheme).sort((a, b) => b[1] - a[1]).slice(0, 4);
+
+    const nbConcernes = periode.filter((t) => t.sommesNousConcernes === "Oui" || t.sommesNousConcernes === "Probablement").length;
+    const critiques = parImpact["Critique"];
+
+    let html = `<strong>${periode.length} texte${periode.length > 1 ? "s" : ""}</strong> analysé${periode.length > 1 ? "s" : ""} sur les ${jours} derniers jours`;
+    html += `, dont <strong>${nbConcernes}</strong> jugé${nbConcernes > 1 ? "s" : ""} pertinent${nbConcernes > 1 ? "s" : ""} pour MPE Europe`;
+    html += ` (${parImpact["Critique"].length} critique${parImpact["Critique"].length !== 1 ? "s" : ""}, ${parImpact["Important"].length} important${parImpact["Important"].length !== 1 ? "s" : ""}, ${parImpact["À surveiller"].length} à surveiller).`;
+
+    if (themesTries.length) {
+      html += `<br/>Thèmes les plus concernés : ${themesTries.map(([id, n]) => `<strong>${escapeHtml(LIBELLES_THEMES[id] || id)}</strong> (${n})`).join(", ")}.`;
+    }
+
+    if (critiques.length) {
+      html += `<ul>${critiques.map((t) => `<li>${escapeHtml(t.titre)}${t.echeanceMiseEnConformite ? ` — échéance ${escapeHtml(t.echeanceMiseEnConformite)}` : ""}</li>`).join("")}</ul>`;
+    }
+
+    return html;
+  }
+
   function genererRapport(jours) {
     const seuil = Date.now() - jours * 24 * 3600 * 1000;
     const periode = tousLesTextes.filter((t) => {
@@ -603,7 +655,7 @@
 
     box.innerHTML = `
       <h3>Veille réglementaire — synthèse (${jours} derniers jours)</h3>
-      <p style="color:var(--muted);">${periode.length} évolution(s) détectée(s), dont ${parImpact["Critique"].length} critique(s) et ${parImpact["Important"].length} importante(s).</p>
+      <div class="rapport-resume">${construireResume(periode, parImpact, jours)}</div>
       ${Object.entries(parImpact).filter(([, items]) => items.length).map(([impact, items]) => `
         <h4>${impact}</h4>
         ${items.map((t, i) => `
