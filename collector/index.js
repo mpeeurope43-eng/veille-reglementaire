@@ -56,8 +56,15 @@ async function main() {
   }
 
   // --- 3. Analyse IA + scoring + écriture + alerte ---
+  // Petite pause entre chaque appel Gemini : le tier gratuit limite le nombre de requêtes
+  // par minute, et enchaîner ~100 analyses sans pause fait échouer la quasi-totalité d'entre
+  // elles (429 "quota exceeded"). analyserTexte() gère aussi une reprise automatique en cas
+  // de dépassement ponctuel malgré cette pause.
   let nbAlertes = 0;
+  let premierTexte = true;
   for (const texte of nouveaux) {
+    if (!premierTexte) await attendre(4000);
+    premierTexte = false;
     try {
       const analyse = await analyserTexte({ apiKey: process.env.GEMINI_API_KEY, texte, profil });
 
@@ -89,6 +96,10 @@ async function main() {
 
   log.etapes.push(`Terminé. ${nbAlertes} alerte(s) envoyée(s).`);
   ecrireLog();
+}
+
+function attendre(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function dateIlYA(jours) {
