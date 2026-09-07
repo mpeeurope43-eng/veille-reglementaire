@@ -2,7 +2,10 @@
   "eurlexRssUrl": [
     "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3nVUPs5IuOuTyC3LG%2BwReqpfCzc%3D"
   ],
-  "autresFluxRss": [],
+  "autresFluxRss": [
+    { "nom": "RIA — Droit", "url": "https://www.ria.fr/category/bonnes-pratiques/droit/feed/" },
+    { "nom": "RIA — Qualité", "url": "https://www.ria.fr/category/techno/qualite/feed/" }
+  ],
   "pisteApiBaseUrl": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
   "pisteTokenUrl": "https://oauth.piste.gouv.fr/api/oauth/token",
   "legifranceRechercheParThemes": true,
