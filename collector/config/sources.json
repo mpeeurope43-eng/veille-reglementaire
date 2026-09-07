@@ -1,7 +1,13 @@
 {
   "eurlexRssUrl": [
-    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3nVUPs5IuOuTyC3LG%2BwReqpfCzc%3D"
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3nVUPs5IuOuTyC3LG%2BwReqpfCzc%3D",
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3ndWPWRCuJ2QdYPH9fHdLEnxolc%3D",
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3ndWPmr4oG10VDYgBB6iWNfczHs%3D",
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3ndWP9FuqD0oS1qCq0R3dKI4FmA%3D",
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3ndWOHeMkYy8F13v58BcseuGECM%3D",
+    "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3ndWOcwamdzgCDFNSJqJnZ5iyjg%3D"
   ],
+  "_commentaireEurlex": "1er lien = Machines (historique). Puis dans l'ordre : REACH/CLP, Équipements sous pression (PED), HACCP, Contact alimentaire, ATEX.",
   "autresFluxRss": [
     { "nom": "RIA — Droit", "url": "https://www.ria.fr/category/bonnes-pratiques/droit/feed/" },
     { "nom": "RIA — Qualité", "url": "https://www.ria.fr/category/techno/qualite/feed/" }
