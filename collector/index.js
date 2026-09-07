@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { recupererEurLex } from "./sources/eurlex.js";
+import { recupererFluxGeneriques } from "./sources/flux-rss.js";
 import { rechercherLegifrance } from "./sources/legifrance.js";
 import { initFirestore, existeDeja, enregistrerTexte, chargerSeuils, chargerAbonnements } from "./lib/firestore.js";
 import { analyserTexte } from "./lib/analyze.js";
@@ -21,7 +22,7 @@ async function main() {
 
   const motsCles = profil.themesReglementaires.flatMap((t) => t.motsClesRecherche);
 
-  const [textesEurLex, textesLegifrance] = await Promise.all([
+  const [textesEurLex, textesLegifrance, textesAutresSources] = await Promise.all([
     recupererEurLex(sourcesConfig.eurlexRssUrl).catch((e) => {
       log.erreurs.push(`EUR-Lex: ${e.message}`);
       return [];
@@ -37,10 +38,14 @@ async function main() {
       log.erreurs.push(`Légifrance: ${e.message}`);
       return [];
     }),
+    recupererFluxGeneriques(sourcesConfig.autresFluxRss).catch((e) => {
+      log.erreurs.push(`Autres sources: ${e.message}`);
+      return [];
+    }),
   ]);
 
-  const tousLesTextes = [...textesEurLex, ...textesLegifrance];
-  log.etapes.push(`Collecte : ${tousLesTextes.length} texte(s) trouvé(s) (${textesEurLex.length} EUR-Lex, ${textesLegifrance.length} Légifrance).`);
+  const tousLesTextes = [...textesEurLex, ...textesLegifrance, ...textesAutresSources];
+  log.etapes.push(`Collecte : ${tousLesTextes.length} texte(s) trouvé(s) (${textesEurLex.length} EUR-Lex, ${textesLegifrance.length} Légifrance, ${textesAutresSources.length} autres sources).`);
 
   // --- 2. Déduplication ---
   const nouveaux = [];

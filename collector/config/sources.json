@@ -2,8 +2,10 @@
   "eurlexRssUrl": [
     "https://eur-lex.europa.eu/FR/display-feed.rss?myRssId=zqe49oQo%2BVkwdPmp3nVUPs5IuOuTyC3LG%2BwReqpfCzc%3D"
   ],
+  "autresFluxRss": [],
   "pisteApiBaseUrl": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
   "pisteTokenUrl": "https://oauth.piste.gouv.fr/api/oauth/token",
   "legifranceRechercheParThemes": true,
-  "_commentaire": "pisteApiBaseUrl et pisteTokenUrl sont les endpoints officiels documentés par PISTE au moment de la rédaction (sept. 2026) — à revérifier dans la doc PISTE de ton compte au moment de la mise en place, ces URLs peuvent évoluer."
+  "_commentaire": "pisteApiBaseUrl et pisteTokenUrl sont les endpoints officiels documentés par PISTE au moment de la rédaction (sept. 2026) — à revérifier dans la doc PISTE de ton compte au moment de la mise en place, ces URLs peuvent évoluer.",
+  "_commentaireAutresFluxRss": "Sources additionnelles au-delà d'EUR-Lex/Légifrance (ex: AFNOR enquêtes publiques, alertes ECHA REACH/CLP) : ajouter { \"nom\": \"AFNOR\", \"url\": \"https://...\" } une fois le flux RSS créé sur le site concerné. Voir README étape 4 (même principe que les recherches sauvegardées EUR-Lex)."
 }
