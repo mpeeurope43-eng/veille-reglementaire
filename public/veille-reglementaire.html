@@ -298,11 +298,11 @@
   <!-- NORMES APPLICABLES -->
   <section id="tab-normes" style="display:none;">
     <p style="color:var(--muted); font-size:0.85rem; margin-top:0;">
-      Normes techniques (NF/EN/ISO) potentiellement applicables aux équipements et prestations MPE Europe, classées par thème. Liste de départ à enrichir — ajoute un lien (boutique AFNOR, résumé, notice) et ajuste le statut selon la pertinence réelle pour chaque projet.
+      Normes techniques (NF/EN/ISO) potentiellement applicables aux équipements et prestations MPE Europe, classées par catégorie (reprises de ta liste de départ). Liste à enrichir — ajoute un lien (boutique AFNOR, résumé, notice) et ajuste le statut selon la pertinence réelle pour chaque projet.
     </p>
     <div class="filters">
       <select id="filtre-theme-normes">
-        <option value="">Tous les thèmes</option>
+        <option value="">Toutes les catégories</option>
       </select>
     </div>
     <div id="liste-normes"></div>
@@ -767,27 +767,37 @@
 
   // ---------- Normes applicables ----------
   let toutesLesNormes = [];
+  const GROUPE_NORME_AUTRE = "__autre__";
+  // Ordre = celui du fichier "liste des normes.xlsx" de Damien (catégories grises d'origine),
+  // repris tel quel plutôt que remappé sur les thèmes réglementaires.
+  const ORDRE_GROUPES_NORMES = [
+    "Sécurité des machines (obligatoire ou fortement recommandée)",
+    "Moyens d'accès et ergonomie",
+    "Équipements électriques / Automatisme",
+    "Process, automatisation, fluides, etc.",
+    "Spécifique au secteur agroalimentaire (si concerné)",
+    "Optionnel selon le domaine",
+    "PID",
+  ];
 
   function peuplerFiltreThemeNormes() {
     const select = document.getElementById("filtre-theme-normes");
     const valeurActuelle = select.value;
-    const themesPresents = new Set(toutesLesNormes.map((n) => (LIBELLES_THEMES[n.theme] ? n.theme : THEME_AUTRE)));
-    const options = Object.keys(LIBELLES_THEMES)
-      .filter((id) => themesPresents.has(id))
-      .map((id) => ({ id, nom: LIBELLES_THEMES[id] }));
-    if (themesPresents.has(THEME_AUTRE)) options.push({ id: THEME_AUTRE, nom: "Autre / non classé" });
+    const groupesPresents = new Set(toutesLesNormes.map((n) => n.groupeExcel || GROUPE_NORME_AUTRE));
+    const options = ORDRE_GROUPES_NORMES.filter((g) => groupesPresents.has(g));
+    if (groupesPresents.has(GROUPE_NORME_AUTRE)) options.push(GROUPE_NORME_AUTRE);
 
-    select.innerHTML = '<option value="">Tous les thèmes</option>' +
-      options.map((o) => `<option value="${o.id}">${escapeHtml(o.nom)}</option>`).join("");
+    select.innerHTML = '<option value="">Toutes les catégories</option>' +
+      options.map((g) => `<option value="${escapeHtml(g)}">${escapeHtml(g === GROUPE_NORME_AUTRE ? "Autre / non classé" : g)}</option>`).join("");
     select.value = valeurActuelle;
   }
 
   function rendreNormes() {
-    const themeVoulu = document.getElementById("filtre-theme-normes").value;
+    const groupeVoulu = document.getElementById("filtre-theme-normes").value;
     const filtrees = toutesLesNormes.filter((n) => {
-      if (!themeVoulu) return true;
-      const th = LIBELLES_THEMES[n.theme] ? n.theme : THEME_AUTRE;
-      return th === themeVoulu;
+      if (!groupeVoulu) return true;
+      const g = n.groupeExcel || GROUPE_NORME_AUTRE;
+      return g === groupeVoulu;
     });
 
     const container = document.getElementById("liste-normes");
@@ -796,21 +806,21 @@
       return;
     }
 
-    const parTheme = new Map();
+    const parGroupe = new Map();
     filtrees.forEach((n) => {
-      const cle = LIBELLES_THEMES[n.theme] ? n.theme : THEME_AUTRE;
-      if (!parTheme.has(cle)) parTheme.set(cle, []);
-      parTheme.get(cle).push(n);
+      const cle = n.groupeExcel || GROUPE_NORME_AUTRE;
+      if (!parGroupe.has(cle)) parGroupe.set(cle, []);
+      parGroupe.get(cle).push(n);
     });
-    const groupes = [...parTheme.entries()].sort((a, b) => {
-      if (a[0] === THEME_AUTRE) return 1;
-      if (b[0] === THEME_AUTRE) return -1;
-      return b[1].length - a[1].length;
+    const groupes = [...parGroupe.entries()].sort((a, b) => {
+      if (a[0] === GROUPE_NORME_AUTRE) return 1;
+      if (b[0] === GROUPE_NORME_AUTRE) return -1;
+      return ORDRE_GROUPES_NORMES.indexOf(a[0]) - ORDRE_GROUPES_NORMES.indexOf(b[0]);
     });
 
-    container.innerHTML = groupes.map(([themeId, items]) => `
+    container.innerHTML = groupes.map(([groupeNom, items]) => `
       <div class="theme-groupe">
-        <h3 class="theme-titre">${escapeHtml(themeId === THEME_AUTRE ? "Autre / non classé" : LIBELLES_THEMES[themeId])} <span class="theme-count">(${items.length})</span></h3>
+        <h3 class="theme-titre">${escapeHtml(groupeNom === GROUPE_NORME_AUTRE ? "Autre / non classé" : groupeNom)} <span class="theme-count">(${items.length})</span></h3>
         ${items.map((n) => `
           <div class="norme-card" data-id="${n.id}">
             <div class="norme-info">
