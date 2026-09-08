@@ -10,8 +10,14 @@
   "_commentaireEurlex": "1er lien = Machines (historique). Puis dans l'ordre : REACH/CLP, Équipements sous pression (PED), HACCP, Contact alimentaire, ATEX.",
   "autresFluxRss": [
     { "nom": "RIA — Droit", "url": "https://www.ria.fr/category/bonnes-pratiques/droit/feed/" },
-    { "nom": "RIA — Qualité", "url": "https://www.ria.fr/category/techno/qualite/feed/" }
+    { "nom": "RIA — Qualité", "url": "https://www.ria.fr/category/techno/qualite/feed/" },
+    { "nom": "Google News — EHEDG", "url": "https://news.google.com/rss/search?q=conception%20hygi%C3%A9nique%20EHEDG%20agroalimentaire&hl=fr&gl=FR&ceid=FR:fr" },
+    { "nom": "Google News — Normes machines agro", "url": "https://news.google.com/rss/search?q=norme%20NF%20EN%20ISO%20s%C3%A9curit%C3%A9%20machines%20agroalimentaire&hl=fr&gl=FR&ceid=FR:fr" },
+    { "nom": "Google News — ATEX", "url": "https://news.google.com/rss/search?q=r%C3%A9glementation%20ATEX%20poussi%C3%A8res%20combustibles%20industrie&hl=fr&gl=FR&ceid=FR:fr" },
+    { "nom": "Google News — Cybersécurité industrielle", "url": "https://news.google.com/rss/search?q=cybers%C3%A9curit%C3%A9%20automatisation%20industrielle%20r%C3%A9glementation&hl=fr&gl=FR&ceid=FR:fr" },
+    { "nom": "Google News — Décennale BE", "url": "https://news.google.com/rss/search?q=responsabilit%C3%A9%20d%C3%A9cennale%20bureau%20d%27%C3%A9tudes%20industriel&hl=fr&gl=FR&ceid=FR:fr" }
   ],
+  "_commentaireGoogleNews": "Flux Google Actualités (recherche mot-clé, tout le web) : gratuit, sans compte. Attention — les conditions d'utilisation de ce flux le réservent à un usage personnel/non commercial dans un lecteur de flux ; zone grise pour un outil d'entreprise, signalé à Damien le 08/09/2026, accepté en connaissance de cause.",
   "pisteApiBaseUrl": "https://api.piste.gouv.fr/dila/legifrance/lf-engine-app",
   "pisteTokenUrl": "https://oauth.piste.gouv.fr/api/oauth/token",
   "legifranceRechercheParThemes": true,
