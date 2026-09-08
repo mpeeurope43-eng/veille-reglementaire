@@ -542,7 +542,10 @@
       _demarrerTimerInactivite();
       getIdTokenResult(user).then(function(res){
         var role = res.claims && res.claims.role;
-        if(role !== 'admin'){ showScreen('accessDeniedScreen'); return; }
+        // Ouvert à tous les comptes internes (admin/cadre/horaire/alternant) depuis le
+        // 08/09/2026, presta toujours bloqué — même liste de rôles que les règles
+        // Firestore de cet outil (voir firestore_mpe_suite.rules, collections veille/*).
+        if(['admin','cadre','horaire','alternant'].indexOf(role) === -1){ showScreen('accessDeniedScreen'); return; }
         showScreen(null);
         chargerTextes().then(function(){ genererRapport(Number(document.getElementById('rapport-periode').value)); });
         chargerReferentiels();

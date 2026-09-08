@@ -8,7 +8,9 @@ rules_version = '2';
 // les mêmes fonctions estConnecte()/monRole()/estAdmin() que SAV, Suivi de projet et Pointage.
 // C'est ce fichier-là qui est déployé (firebase deploy --only firestore:rules), pas celui-ci.
 //
-// Version alignée avec firestore_mpe_suite.rules (accès réservé aux admins, phase 1) :
+// Version alignée avec firestore_mpe_suite.rules — ouvert à tout le monde SAUF presta
+// (08/09/2026, décision Damien) pour referentiels/normes/abonnements, textes toujours en
+// lecture seule (écriture via le compte de service uniquement), config/params réservé admin :
 
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -16,29 +18,30 @@ service cloud.firestore {
     function estConnecte() { return request.auth != null; }
     function monRole() { return request.auth.token.role; }
     function estAdmin() { return estConnecte() && monRole() == 'admin'; }
+    function peutLireOutil() { return estConnecte() && monRole() in ['admin','cadre','horaire','alternant']; }
 
     match /veille/textes/items/{docId} {
-      allow read: if estAdmin();
+      allow read: if peutLireOutil();
       allow write: if false; // uniquement via le compte de service (Admin SDK, bypass ces règles)
     }
 
     match /veille/referentiels/items/{docId} {
-      allow read: if estAdmin();
-      allow write: if estAdmin();
+      allow read: if peutLireOutil();
+      allow write: if peutLireOutil();
     }
 
     match /veille/normes/items/{docId} {
-      allow read: if estAdmin();
-      allow write: if estAdmin();
+      allow read: if peutLireOutil();
+      allow write: if peutLireOutil();
     }
 
     match /veille/abonnements/items/{docId} {
-      allow read: if estAdmin();
-      allow write: if estAdmin();
+      allow read: if peutLireOutil();
+      allow write: if peutLireOutil();
     }
 
     match /veille/config/params/{docId} {
-      allow read: if estAdmin();
+      allow read: if peutLireOutil();
       allow write: if estAdmin();
     }
   }
